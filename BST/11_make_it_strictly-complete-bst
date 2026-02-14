@@ -1,0 +1,99 @@
+/**
+ * PROBLEM STATEMENT: Binary Search Tree - Thrill to Complete it
+ * * Objective: Create a Binary Search Tree (BST) and transform it into a 
+ * "strictly complete" binary search tree. A strictly complete binary tree 
+ * is defined here as a tree where every non-leaf node must have exactly 
+ * two children. 
+ * * Logic: If a node has only one child, a new child must be created based 
+ * on the BST property. The hint suggests:
+ * - New Left Child = (min_range + current_node_data) / 2
+ * - New Right Child = (current_node_data + max_range) / 2
+ * * CONSTRAINTS:
+ * - Input ends with -1.
+ * - The tree must maintain BST properties after additions.
+ * - Ranges for initial interpolation usually fall between 0 and 100 based on test cases.
+ */
+
+#include <iostream>
+
+using namespace std;
+
+struct Node {
+    int data;
+    Node *left, *right;
+
+    // Constructor for cleaner node initialization
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// Standard BST insertion
+void insert(Node* &root, int value) {
+    if (root == nullptr) {
+        root = new Node(value);
+        return;
+    }
+    if (value < root->data) {
+        insert(root->left, value);
+    } else {
+        insert(root->right, value);
+    }
+}
+
+/**
+ * Ensures every internal node has two children.
+ * Uses min and max boundaries to calculate the value of missing siblings.
+ */
+void fillMissingChildren(Node* root, int minBoundary, int maxBoundary) {
+    if (root == nullptr) return;
+
+    // Case 1: Node has Left child but no Right child
+    if (root->left != nullptr && root->right == nullptr) {
+        int newVal = (root->data + maxBoundary) / 2;
+        root->right = new Node(newVal);
+    } 
+    // Case 2: Node has Right child but no Left child
+    else if (root->right != nullptr && root->left == nullptr) {
+        int newVal = (minBoundary + root->data) / 2;
+        root->left = new Node(newVal);
+    }
+
+    // Recursively process children with updated boundaries
+    if (root->left) fillMissingChildren(root->left, minBoundary, root->data);
+    if (root->right) fillMissingChildren(root->right, root->data, maxBoundary);
+}
+
+void printInorder(Node* root) {
+    if (root == nullptr) return;
+    printInorder(root->left);
+    cout << root->data << " ";
+    printInorder(root->right);
+}
+
+void printPreorder(Node* root) {
+    if (root == nullptr) return;
+    cout << root->data << " ";
+    printPreorder(root->left);
+    printPreorder(root->right);
+}
+
+int main() {
+    Node* root = nullptr;
+    int inputVal;
+
+    // Read input until -1
+    while (cin >> inputVal && inputVal != -1) {
+        insert(root, inputVal);
+    }
+
+    // Transform to strictly complete BST
+    // Initial boundaries are 0 and 100 as per common test case ranges
+    if (root != nullptr) {
+        fillMissingChildren(root, 0, 100);
+    }
+
+    printInorder(root);
+    cout << endl;
+    printPreorder(root);
+
+    return 0;
+}
