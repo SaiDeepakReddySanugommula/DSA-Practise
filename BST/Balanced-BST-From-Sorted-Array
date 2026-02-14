@@ -1,0 +1,98 @@
+/* * PROJECT: Balanced Binary Search Tree from Sorted Array
+ * -----------------------------------------------------
+ * PROBLEM STATEMENT:
+ * Construct a height-balanced BST from a sorted input array.
+ * To ensure balance, the middle element of the array (or current segment)
+ * must be used as the root of the subtree.
+ * * ALGORITHM:
+ * 1. Read input into a vector until -1 is encountered.
+ * 2. Use a recursive "divide and conquer" approach:
+ * - Pick the middle element to maintain balance.
+ * - Recursively build the left subtree from the left half.
+ * - Recursively build the right subtree from the right half.
+ * 3. Output the resulting tree using Preorder Traversal.
+ */
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// Structure for a Binary Search Tree node
+struct bstnode {
+    int data;
+    bstnode *lc, *rc;
+};
+
+/**
+ * Standard BST Insertion:
+ * Helper function to allocate nodes and insert data into the tree structure.
+ */
+void create(bstnode* &root, int k) {
+    if (root == NULL) {
+        root = new bstnode;
+        root->data = k;
+        root->lc = NULL;
+        root->rc = NULL;
+        return;
+    }
+    if (k < root->data) {
+        create(root->lc, k);
+    } else {
+        create(root->rc, k);
+    }
+}
+
+/**
+ * Recursive Balanced Tree Construction:
+ * Uses the middle element of the current array range [low, high] 
+ * to ensure the tree remains balanced.
+ */
+void buildBalancedBST(const vector<int>& v, bstnode* &root, int low, int high) {
+    if (low > high) return;
+
+    // Calculate mid to pick the root for this subtree
+    // Note: Using (low + high + 1) / 2 matches the specific mid-picking 
+    // logic required to get the sample output 5 3 2 1 4 8 7 6 9.
+    int mid = (low + high + 1) / 2;
+    
+    create(root, v[mid]);
+    
+    // Recursively build subtrees
+    buildBalancedBST(v, root, low, mid - 1);
+    buildBalancedBST(v, root, mid + 1, high);
+}
+
+/**
+ * Preorder Traversal: Root -> Left -> Right
+ * This traversal order helps verify the structure of the balanced tree.
+ */
+void preorder(bstnode* root) {
+    if (root == NULL) return;
+    cout << root->data << " ";
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+int main() {
+    vector<int> arr;
+    int input_val;
+    bstnode* root = NULL;
+
+    // Read sorted input into vector A
+    while (cin >> input_val && input_val != -1) {
+        arr.push_back(input_val);
+    }
+
+    if (!arr.empty()) {
+        int low = 0;
+        int high = arr.size() - 1;
+        buildBalancedBST(arr, root, low, high);
+    }
+
+    // Print resulting tree in Preorder
+    preorder(root);
+    cout << endl;
+
+    return 0;
+}
