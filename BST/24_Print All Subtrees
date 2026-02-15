@@ -4,6 +4,9 @@ Create a Binary Search Tree (BST) using the given input values terminated by -1.
 For every node in the BST, print the subtree rooted at that node. Each line of output
 should start with the root of that subtree followed by all its node values in sorted
 (inorder) order.
+Restriction:
+Use a single recursive function to print subtrees as per the problem requirement.
+Do not use any extra arrays or data structures.
 
 Input:
 5 8 3 4 1 9 6 7 2 -1
