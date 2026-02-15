@@ -1,0 +1,100 @@
+/*
+Problem Statement:
+Construct a binary tree using serialized preorder input where 0 represents a NULL node.
+Recursively traverse the tree to capture extreme nodes from left and right sides.
+Print pairs such that each line contains the corresponding leftmost and rightmost nodes
+from bottom to top, ending with the root pair.
+
+Sample Input:
+5 8 7 2 0 0 1 10 0 0 0 6 0 0 3 4 0 0 9 24 0 36 0 0 18 0 0
+
+Sample Output:
+2 18
+10 36
+1 24
+7 9
+6 4
+8 3
+5 5
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinaryTreeNode {
+    int data;
+    BinaryTreeNode* leftChild;
+    BinaryTreeNode* rightChild;
+};
+
+BinaryTreeNode* rootNode = NULL;
+
+struct Stack {
+    int topIndex = -1;
+    int elements[50];
+} leftStack, rightStack;
+
+void push(Stack &stackRef, int value) {
+    if (stackRef.topIndex >= 49) return;
+    stackRef.topIndex++;
+    stackRef.elements[stackRef.topIndex] = value;
+}
+
+int pop(Stack &stackRef) {
+    if (stackRef.topIndex == -1) return -1;
+    int value = stackRef.elements[stackRef.topIndex];
+    stackRef.topIndex--;
+    return value;
+}
+
+void buildBinaryTree(BinaryTreeNode* &currentNode, int inputValue) {
+    cin >> inputValue;
+    if (inputValue == 0) return;
+
+    currentNode = new BinaryTreeNode;
+    currentNode->data = inputValue;
+    currentNode->leftChild = NULL;
+    currentNode->rightChild = NULL;
+
+    buildBinaryTree(currentNode->leftChild, inputValue);
+    buildBinaryTree(currentNode->rightChild, inputValue);
+}
+
+void collectLeftExtremeNodes(Stack &stackRef, BinaryTreeNode* currentNode) {
+    if (currentNode == NULL) return;
+    collectLeftExtremeNodes(stackRef, currentNode->leftChild);
+    collectLeftExtremeNodes(stackRef, currentNode->rightChild);
+    push(stackRef, currentNode->data);
+}
+
+void collectRightExtremeNodes(Stack &stackRef, BinaryTreeNode* currentNode) {
+    if (currentNode == NULL) return;
+    collectRightExtremeNodes(stackRef, currentNode->rightChild);
+    collectRightExtremeNodes(stackRef, currentNode->leftChild);
+    push(stackRef, currentNode->data);
+}
+
+void printExtremePairs(Stack leftStackCopy, Stack rightStackCopy) {
+    if (leftStackCopy.topIndex == -1) return;
+
+    int leftValue = pop(leftStackCopy);
+    int rightValue = pop(rightStackCopy);
+
+    printExtremePairs(leftStackCopy, rightStackCopy);
+    cout << leftValue << " " << rightValue << endl;
+}
+
+int main() {
+    int inputValue;
+    buildBinaryTree(rootNode, inputValue);
+
+    collectLeftExtremeNodes(leftStack, rootNode->leftChild);
+    collectRightExtremeNodes(rightStack, rootNode->rightChild);
+
+    push(leftStack, rootNode->data);
+    push(rightStack, rootNode->data);
+
+    printExtremePairs(leftStack, rightStack);
+
+    return 0;
+}
