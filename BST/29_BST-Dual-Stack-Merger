@@ -1,0 +1,105 @@
+/*
+ * PROBLEM STATEMENT: Merge Two BSTs Using Two Stacks
+ * -------------------------------------------------
+ * Goal: Take two existing BSTs (T1, T2) and merge them into T3.
+ * Rule 1: Only one traversal allowed for the source trees.
+ * Rule 2: Must use two stacks for the merging process.
+ * Output: Preorder of the final merged tree.
+ */
+
+#include <iostream>
+
+using namespace std;
+
+struct Node {
+    int data;
+    Node *left, *right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// Simple stack since I need to track node values during the single pass
+struct Stack {
+    int top = -1;
+    int arr[100];
+
+    void push(int val) {
+        if (top < 99) arr[++top] = val;
+    }
+
+    int pop() {
+        return (top == -1) ? -1 : arr[top--];
+    }
+
+    bool isEmpty() {
+        return top == -1;
+    }
+};
+
+// Basic BST insert logic
+void insert(Node* &root, int value) {
+    if (root == nullptr) {
+        root = new Node(value);
+        return;
+    }
+    if (value < root->data) insert(root->left, value);
+    else insert(root->right, value);
+}
+
+/* * My logic here: To build T3 correctly while only touching T1/T2 once, 
+ * I'm "flattening" the trees into stacks. 
+ * I use Right-Left-Root order so the root ends up at the top of the stack.
+ */
+void fillStack(Node* root, Stack &s) {
+    if (root == nullptr) return;
+    
+    fillStack(root->right, s);
+    fillStack(root->left, s);
+    s.push(root->data); // Root goes in last, comes out first
+}
+
+
+
+/* * Taking values from both stacks and feeding them into T3.
+ * Alternating between stacks helps distribute the nodes.
+ */
+void mergeIntoT3(Node* &T3, Stack &s1, Stack &s2) {
+    while (!s1.isEmpty() && !s2.isEmpty()) {
+        insert(T3, s1.pop());
+        insert(T3, s2.pop());
+    }
+    // Clean up if one tree was bigger than the other
+    while (!s1.isEmpty()) insert(T3, s1.pop());
+    while (!s2.isEmpty()) insert(T3, s2.pop());
+}
+
+void printPreorder(Node* root) {
+    if (root == nullptr) return;
+    cout << root->data << " ";
+    printPreorder(root->left);
+    printPreorder(root->right);
+}
+
+int main() {
+    Node *T1 = nullptr, *T2 = nullptr, *T3 = nullptr;
+    Stack s1, s2;
+    int val;
+
+    // Building T1 from first set of inputs
+    while (cin >> val && val != -1) insert(T1, val);
+    
+    // Building T2 from second set
+    while (cin >> val && val != -1) insert(T2, val);
+
+    // Step 1: Move tree data to stacks (single traversal)
+    fillStack(T1, s1);
+    fillStack(T2, s2);
+
+    // Step 2: Construct the merged tree
+    mergeIntoT3(T3, s1, s2);
+
+    // Step 3: Verify with Preorder output
+    printPreorder(T3);
+    cout << endl;
+
+    return 0;
+}
