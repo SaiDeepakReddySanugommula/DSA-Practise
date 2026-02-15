@@ -1,0 +1,68 @@
+#include <iostream>
+using namespace std;
+
+/*
+14. Sum Tree Validation
+
+Problem Statement:
+Create a binary tree using serialized preorder input where 0 represents a NULL node.
+Check whether the given binary tree is a Sum Tree.
+
+A Sum Tree is a tree in which every non-leaf node’s value is equal to the sum of
+all nodes present in its left and right subtrees.
+Leaf nodes can have any value.
+An empty child node is considered to have value 0.
+
+Input:
+Serialized preorder sequence of integers.
+
+Sample Input 1:
+44 9 4 0 0 5 0 0 13 6 0 0 7 0 0
+
+Output:
+1
+
+Sample Input 2:
+5 3 1 0 2 0 0 6 0 0 8 4 0 7 0 0 9 0 0
+
+Output:
+0
+*/
+
+struct bstnode{
+    int data;
+    bstnode*lc,*rc;
+};
+
+bstnode* root=NULL;
+
+void create(bstnode* &root,int k){
+    cin>>k;
+    if(k==0)return;
+    root=new bstnode;
+    root->data=k;
+    root->lc=NULL;
+    root->rc=NULL;
+    create(root->lc,k);
+    create(root->rc,k);
+}
+
+int sum(bstnode* root){
+    if(root==NULL)return 0;
+    return root->data+sum(root->lc)+sum(root->rc);
+}
+
+bool check(bstnode* root){
+    if(root==NULL)return 1;
+    if(root->lc!=NULL && root->rc!=NULL)
+        return (root->data==sum(root->lc)+sum(root->rc)) && check(root->lc) && check(root->rc);
+    else
+        return 1;
+}
+
+int main(){
+    int t;
+    create(root,t);
+    cout<<check(root);
+    return 0;
+}
