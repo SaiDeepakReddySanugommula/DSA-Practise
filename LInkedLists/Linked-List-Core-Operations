@@ -1,0 +1,188 @@
+/*
+ * PROBLEM STATEMENT: Linked List Operations - 1
+ * --------------------------------------------
+ * 1. Create a Linked list with numbers (terminate input with -1).
+ * 2. Print all values and print values in reverse order.
+ * 3. Print the total count of nodes.
+ * 4. Find and print the minimum and maximum data values.
+ * 5. Find the middle node value using ONLY ONE scan.
+ * 6. Count and print the number of odd and even data values.
+ * 7. Search for a value 'k': print 1 if found, 0 otherwise.
+ */
+
+#include <iostream>
+using namespace std;
+
+struct lnode {
+    int data;
+    lnode* next;
+};
+
+// Helper function to allocate memory for a new node
+lnode* createlNode(int x) {
+    lnode* p = new lnode;
+    p->data = x;
+    p->next = NULL;
+    return p;
+}
+
+// Personal note: Standard head insertion
+void addAtBeginning(lnode* &head, int x) {
+    lnode* p = createlNode(x);
+    p->next = head;
+    head = p;
+}
+
+// Adding at the end requires a quick traverse to find the last NULL
+void addAtEnd(lnode* &head, int x) {
+    lnode* p = createlNode(x);
+    if (head == NULL) {
+        head = p;
+        return;
+    }
+    lnode* ref = head;
+    while (ref->next != NULL) {
+        ref = ref->next;
+    }
+    ref->next = p;
+}
+
+// Note to self: remember to return a value or change return type to void
+int removeAtBeginning(lnode* &head) {
+    if (head == NULL) return -1;
+    lnode* p = head->next;
+    int t = head->data;
+    delete head;
+    head = p;
+    return t; 
+}
+
+int removeAtEnd(lnode* &head) {
+    if (head == NULL) return -1;
+    if (head->next == NULL) {
+        int t = head->data;
+        delete head;
+        head = NULL;
+        return t;
+    }
+    lnode* p = head;
+    while (p->next->next != NULL) {
+        p = p->next;
+    }
+    int t = p->next->data;
+    delete p->next;
+    p->next = NULL;
+    return t;
+}
+
+void print(lnode *head) {
+    while (head != NULL) {
+        cout << head->data << " ";
+        head = head->next;
+    }
+}
+
+// Using recursion here for reverse print because it's easier than stacks
+void revPrint(lnode *head) {
+    if (head == NULL) return;
+    revPrint(head->next);
+    cout << head->data << " ";
+}
+
+int counter(lnode *head) {
+    int cnt = 0;
+    while (head != NULL) {
+        cnt++;
+        head = head->next;
+    }
+    return cnt;
+}
+
+int minn(lnode *head) {
+    if (head == NULL) return -1;
+    int res = head->data;
+    while (head != NULL) {
+        res = min(res, head->data);
+        head = head->next;
+    }
+    return res;
+}
+
+int maxx(lnode *head) {
+    if (head == NULL) return -1;
+    int res = head->data;
+    while (head != NULL) {
+        res = max(res, head->data);
+        head = head->next;
+    }
+    return res;
+}
+
+int oddcnt(lnode *head) {
+    int cnt = 0;
+    while (head != NULL) {
+        if (head->data & 1) cnt++; // bitwise check for odd
+        head = head->next;
+    }
+    return cnt;
+}
+
+int evencnt(lnode *head) {
+    int cnt = 0;
+    while (head != NULL) {
+        if (!(head->data & 1)) cnt++;
+        head = head->next;
+    }
+    return cnt;
+}
+
+
+
+// Fast/Slow pointer trick for the "only one scan" requirement
+int midNode(lnode* head) {
+    lnode *p1 = head; // slow
+    lnode *p2 = head; // fast
+    if (head == NULL) return -1;
+    
+    while (p2 != NULL && p2->next != NULL) {
+        p2 = p2->next->next;
+        p1 = p1->next;
+    }
+    return p1->data;
+}
+
+bool search(lnode* head, int x) {
+    while (head != NULL) {
+        if (head->data == x) return true;
+        head = head->next;
+    }
+    return false;
+}
+
+lnode* head = NULL;
+int main() {
+    int t;
+    // Termination of input is -1
+    while (cin >> t && t != -1) {
+        addAtEnd(head, t);
+    }
+
+    print(head);
+    cout << endl;
+    revPrint(head);
+    cout << endl;
+    
+    cout << counter(head) << endl;
+    cout << minn(head) << endl;
+    cout << maxx(head) << endl;
+    cout << midNode(head) << endl;
+    cout << oddcnt(head) << endl;
+    cout << evencnt(head) << endl;
+
+    int k;
+    if (cin >> k) {
+        cout << search(head, k) << endl;
+    }
+
+    return 0;
+}
