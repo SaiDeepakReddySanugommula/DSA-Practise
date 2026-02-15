@@ -1,0 +1,187 @@
+/*
+Problem Statement:
+Create a Binary Search Tree (BST) using the given input sequence.
+Print the following level-order variations of the BST:
+
+1. Level order
+2. Reverse level order
+3. Reverse level order (alternate direction)
+4. Squirrel level order (clockwise start)
+5. Squirrel level order (anti-clockwise start)
+6. Alternate odd-level reversal level order
+7. Alternate even-level reversal level order
+
+Input Format:
+Sequence of integers terminated by -1.
+
+Sample Input:
+5 8 3 4 1 9 6 7 2 -1
+
+Sample Output:
+5 3 8 1 4 6 9 2 7
+7 2 9 6 4 1 8 3 5
+2 7 1 4 6 9 3 8 5
+5 8 3 1 4 6 9 7 2
+5 3 8 9 6 4 1 2 7
+5 8 3 1 4 6 9 7 2
+5 3 8 9 6 4 1 2 7
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinarySearchTreeNode {
+    int data;
+    BinarySearchTreeNode *leftChild, *rightChild;
+};
+
+struct Stack {
+    int top = -1;
+    BinarySearchTreeNode* elements[100];
+};
+
+struct Queue {
+    int rear = -1, front = -1;
+    BinarySearchTreeNode* elements[100];
+};
+
+void push(Stack &stackRef, BinarySearchTreeNode* node) {
+    if (stackRef.top >= 99) return;
+    stackRef.elements[++stackRef.top] = node;
+}
+
+BinarySearchTreeNode* pop(Stack &stackRef) {
+    return stackRef.elements[stackRef.top--];
+}
+
+void enqueue(Queue &queueRef, BinarySearchTreeNode* node) {
+    if (queueRef.rear == -1) {
+        queueRef.rear = 0;
+        queueRef.front = 0;
+    } else {
+        queueRef.rear++;
+    }
+    queueRef.elements[queueRef.rear] = node;
+}
+
+BinarySearchTreeNode* dequeue(Queue &queueRef) {
+    BinarySearchTreeNode* node = queueRef.elements[queueRef.front];
+    if (queueRef.front == queueRef.rear) {
+        queueRef.front = -1;
+        queueRef.rear = -1;
+    } else {
+        queueRef.front++;
+    }
+    return node;
+}
+
+void insertIntoBST(BinarySearchTreeNode* &rootNode, int value) {
+    if (rootNode == NULL) {
+        rootNode = new BinarySearchTreeNode;
+        rootNode->data = value;
+        rootNode->leftChild = NULL;
+        rootNode->rightChild = NULL;
+        return;
+    }
+    if (rootNode->data > value) insertIntoBST(rootNode->leftChild, value);
+    else insertIntoBST(rootNode->rightChild, value);
+}
+
+void squirrelClockwiseTraversal(BinarySearchTreeNode* rootNode) {
+    if (!rootNode) return;
+    Stack firstStack, secondStack;
+    push(firstStack, rootNode);
+
+    while (firstStack.top != -1 || secondStack.top != -1) {
+        while (firstStack.top != -1) {
+            BinarySearchTreeNode* tempNode = pop(firstStack);
+            cout << tempNode->data << " ";
+            if (tempNode->leftChild) push(secondStack, tempNode->leftChild);
+            if (tempNode->rightChild) push(secondStack, tempNode->rightChild);
+        }
+        while (secondStack.top != -1) {
+            BinarySearchTreeNode* tempNode = pop(secondStack);
+            cout << tempNode->data << " ";
+            if (tempNode->rightChild) push(firstStack, tempNode->rightChild);
+            if (tempNode->leftChild) push(firstStack, tempNode->leftChild);
+        }
+    }
+}
+
+void squirrelAntiClockwiseTraversal(BinarySearchTreeNode* rootNode) {
+    if (!rootNode) return;
+    Stack firstStack, secondStack;
+    push(firstStack, rootNode);
+
+    while (firstStack.top != -1 || secondStack.top != -1) {
+        while (firstStack.top != -1) {
+            BinarySearchTreeNode* tempNode = pop(firstStack);
+            cout << tempNode->data << " ";
+            if (tempNode->rightChild) push(secondStack, tempNode->rightChild);
+            if (tempNode->leftChild) push(secondStack, tempNode->leftChild);
+        }
+        while (secondStack.top != -1) {
+            BinarySearchTreeNode* tempNode = pop(secondStack);
+            cout << tempNode->data << " ";
+            if (tempNode->leftChild) push(firstStack, tempNode->leftChild);
+            if (tempNode->rightChild) push(firstStack, tempNode->rightChild);
+        }
+    }
+}
+
+int main() {
+    BinarySearchTreeNode* rootNode = NULL;
+    int inputValue;
+
+    while (cin >> inputValue && inputValue != -1) {
+        insertIntoBST(rootNode, inputValue);
+    }
+
+    Queue levelQueue;
+    enqueue(levelQueue, rootNode);
+    while (levelQueue.front != -1) {
+        BinarySearchTreeNode* currentNode = dequeue(levelQueue);
+        cout << currentNode->data << " ";
+        if (currentNode->leftChild) enqueue(levelQueue, currentNode->leftChild);
+        if (currentNode->rightChild) enqueue(levelQueue, currentNode->rightChild);
+    }
+    cout << endl;
+
+    Queue reverseQueue;
+    Stack reverseStack;
+    enqueue(reverseQueue, rootNode);
+    while (reverseQueue.front != -1) {
+        BinarySearchTreeNode* currentNode = dequeue(reverseQueue);
+        push(reverseStack, currentNode);
+        if (currentNode->leftChild) enqueue(reverseQueue, currentNode->leftChild);
+        if (currentNode->rightChild) enqueue(reverseQueue, currentNode->rightChild);
+    }
+    while (reverseStack.top != -1) cout << pop(reverseStack)->data << " ";
+    cout << endl;
+
+    Queue alternateQueue;
+    Stack alternateStack;
+    enqueue(alternateQueue, rootNode);
+    while (alternateQueue.front != -1) {
+        BinarySearchTreeNode* currentNode = dequeue(alternateQueue);
+        push(alternateStack, currentNode);
+        if (currentNode->rightChild) enqueue(alternateQueue, currentNode->rightChild);
+        if (currentNode->leftChild) enqueue(alternateQueue, currentNode->leftChild);
+    }
+    while (alternateStack.top != -1) cout << pop(alternateStack)->data << " ";
+    cout << endl;
+
+    squirrelClockwiseTraversal(rootNode);
+    cout << endl;
+
+    squirrelAntiClockwiseTraversal(rootNode);
+    cout << endl;
+
+    squirrelClockwiseTraversal(rootNode);
+    cout << endl;
+
+    squirrelAntiClockwiseTraversal(rootNode);
+    cout << endl;
+
+    return 0;
+}
