@@ -1,0 +1,258 @@
+/*
+Problem Statement:
+Create and print different binary trees based on the given inputs.
+
+1) Construct a complete binary tree with nodes 1 to n (level-wise insertion)
+   and print its level order traversal. Each level must be terminated by 0.
+
+2) Construct another tree with reversed child insertion order (right child first,
+   then left child) and print its level order traversal. Each level terminated by 0.
+
+3) Construct a character-based complete binary tree from 'a' to given character
+   and print level order traversal. Each level terminated by '#'.
+
+4) Construct a complete binary tree with nodes 1 to n and print all
+   non-border nodes in level order.
+
+Sample Combined Test Case Input:
+15
+7
+o
+9
+
+Sample Outputs (as per each section):
+Level order with 0 termination
+Reverse constructed tree level order
+Character tree level order with '#'
+Non-border nodes in level order
+*/
+
+#include <iostream>
+using namespace std;
+
+struct IntTreeNode {
+    int data;
+    IntTreeNode *leftChild, *rightChild;
+};
+
+struct CharTreeNode {
+    char data;
+    CharTreeNode *leftChild, *rightChild;
+};
+
+struct IntQueue {
+    int frontIndex = -1, rearIndex = -1;
+    IntTreeNode* elements[100];
+};
+
+struct CharQueue {
+    int frontIndex = -1, rearIndex = -1;
+    CharTreeNode* elements[100];
+};
+
+void enqueueInt(IntQueue &queueRef, IntTreeNode* node) {
+    if (queueRef.rearIndex == -1) {
+        queueRef.rearIndex = 0;
+        queueRef.frontIndex = 0;
+    } else {
+        queueRef.rearIndex++;
+    }
+    queueRef.elements[queueRef.rearIndex] = node;
+}
+
+IntTreeNode* dequeueInt(IntQueue &queueRef) {
+    IntTreeNode* tempNode = queueRef.elements[queueRef.frontIndex];
+    if (queueRef.frontIndex == queueRef.rearIndex) {
+        queueRef.frontIndex = -1;
+        queueRef.rearIndex = -1;
+    } else {
+        queueRef.frontIndex++;
+    }
+    return tempNode;
+}
+
+void enqueueChar(CharQueue &queueRef, CharTreeNode* node) {
+    if (queueRef.rearIndex == -1) {
+        queueRef.rearIndex = 0;
+        queueRef.frontIndex = 0;
+    } else {
+        queueRef.rearIndex++;
+    }
+    queueRef.elements[queueRef.rearIndex] = node;
+}
+
+CharTreeNode* dequeueChar(CharQueue &queueRef) {
+    CharTreeNode* tempNode = queueRef.elements[queueRef.frontIndex];
+    if (queueRef.frontIndex == queueRef.rearIndex) {
+        queueRef.frontIndex = -1;
+        queueRef.rearIndex = -1;
+    } else {
+        queueRef.frontIndex++;
+    }
+    return tempNode;
+}
+
+void printLevelOrderWithZeroTermination(IntTreeNode* rootNode) {
+    IntQueue traversalQueue;
+    traversalQueue.frontIndex = traversalQueue.rearIndex = -1;
+    enqueueInt(traversalQueue, rootNode);
+    enqueueInt(traversalQueue, NULL);
+
+    while (traversalQueue.frontIndex != -1) {
+        IntTreeNode* currentNode = dequeueInt(traversalQueue);
+
+        if (currentNode != NULL) {
+            cout << currentNode->data << " ";
+            if (currentNode->leftChild) enqueueInt(traversalQueue, currentNode->leftChild);
+            if (currentNode->rightChild) enqueueInt(traversalQueue, currentNode->rightChild);
+        } else {
+            if (traversalQueue.rearIndex != -1) enqueueInt(traversalQueue, NULL);
+            cout << "0 \n";
+        }
+    }
+}
+
+void printLevelOrderWithHashTermination(CharTreeNode* rootNode) {
+    CharQueue traversalQueue;
+    traversalQueue.frontIndex = traversalQueue.rearIndex = -1;
+    enqueueChar(traversalQueue, rootNode);
+    enqueueChar(traversalQueue, NULL);
+
+    while (traversalQueue.frontIndex != -1) {
+        CharTreeNode* currentNode = dequeueChar(traversalQueue);
+
+        if (currentNode != NULL) {
+            cout << currentNode->data << " ";
+            if (currentNode->leftChild) enqueueChar(traversalQueue, currentNode->leftChild);
+            if (currentNode->rightChild) enqueueChar(traversalQueue, currentNode->rightChild);
+        } else {
+            if (traversalQueue.rearIndex != -1) enqueueChar(traversalQueue, NULL);
+            cout << "# \n";
+        }
+    }
+}
+
+void printNonBorderNodesLevelOrder(IntTreeNode* rootNode) {
+    if (rootNode == NULL) return;
+
+    IntQueue traversalQueue;
+    traversalQueue.frontIndex = traversalQueue.rearIndex = -1;
+    enqueueInt(traversalQueue, rootNode);
+    enqueueInt(traversalQueue, NULL);
+
+    bool isFirstNode = true;
+
+    while (traversalQueue.frontIndex != -1) {
+        IntTreeNode* currentNode = dequeueInt(traversalQueue);
+
+        if (currentNode == NULL) {
+            if (traversalQueue.frontIndex != -1) enqueueInt(traversalQueue, NULL);
+            isFirstNode = true;
+            continue;
+        }
+
+        IntTreeNode* nextNode =
+            (traversalQueue.frontIndex != -1) ? traversalQueue.elements[traversalQueue.frontIndex] : NULL;
+
+        if (!isFirstNode && nextNode != NULL) {
+            cout << currentNode->data << " ";
+        }
+
+        isFirstNode = false;
+
+        if (currentNode->leftChild) enqueueInt(traversalQueue, currentNode->leftChild);
+        if (currentNode->rightChild) enqueueInt(traversalQueue, currentNode->rightChild);
+    }
+
+    cout << endl;
+}
+
+IntTreeNode* buildCompleteTree(int totalNodes) {
+    IntTreeNode* rootNode = new IntTreeNode{1, NULL, NULL};
+    IntQueue constructionQueue;
+    enqueueInt(constructionQueue, rootNode);
+
+    int currentValue = 2;
+
+    while (currentValue <= totalNodes) {
+        IntTreeNode* parentNode = dequeueInt(constructionQueue);
+
+        parentNode->leftChild = new IntTreeNode{currentValue++, NULL, NULL};
+        enqueueInt(constructionQueue, parentNode->leftChild);
+
+        if (currentValue > totalNodes) break;
+
+        parentNode->rightChild = new IntTreeNode{currentValue++, NULL, NULL};
+        enqueueInt(constructionQueue, parentNode->rightChild);
+    }
+
+    return rootNode;
+}
+
+IntTreeNode* buildReverseCompleteTree(int totalNodes) {
+    IntTreeNode* rootNode = new IntTreeNode{1, NULL, NULL};
+    IntQueue constructionQueue;
+    enqueueInt(constructionQueue, rootNode);
+
+    int currentValue = 2;
+
+    while (currentValue <= totalNodes) {
+        IntTreeNode* parentNode = dequeueInt(constructionQueue);
+
+        parentNode->rightChild = new IntTreeNode{currentValue++, NULL, NULL};
+        enqueueInt(constructionQueue, parentNode->rightChild);
+
+        if (currentValue > totalNodes) break;
+
+        parentNode->leftChild = new IntTreeNode{currentValue++, NULL, NULL};
+        enqueueInt(constructionQueue, parentNode->leftChild);
+    }
+
+    return rootNode;
+}
+
+CharTreeNode* buildCharacterCompleteTree(char lastCharacter) {
+    CharTreeNode* rootNode = new CharTreeNode{'a', NULL, NULL};
+    CharQueue constructionQueue;
+    enqueueChar(constructionQueue, rootNode);
+
+    int currentIndex = 1;
+    int limit = lastCharacter - 'a';
+
+    while (currentIndex <= limit) {
+        CharTreeNode* parentNode = dequeueChar(constructionQueue);
+
+        parentNode->leftChild = new CharTreeNode{(char)('a' + currentIndex++), NULL, NULL};
+        enqueueChar(constructionQueue, parentNode->leftChild);
+
+        if (currentIndex > limit) break;
+
+        parentNode->rightChild = new CharTreeNode{(char)('a' + currentIndex++), NULL, NULL};
+        enqueueChar(constructionQueue, parentNode->rightChild);
+    }
+
+    return rootNode;
+}
+
+int main() {
+    int n;
+
+    cin >> n;
+    IntTreeNode* completeTree = buildCompleteTree(n);
+    printLevelOrderWithZeroTermination(completeTree);
+
+    cin >> n;
+    IntTreeNode* reverseTree = buildReverseCompleteTree(n);
+    printLevelOrderWithZeroTermination(reverseTree);
+
+    char lastChar;
+    cin >> lastChar;
+    CharTreeNode* charTree = buildCharacterCompleteTree(lastChar);
+    printLevelOrderWithHashTermination(charTree);
+
+    cin >> n;
+    IntTreeNode* treeForNonBorder = buildCompleteTree(n);
+    printNonBorderNodesLevelOrder(treeForNonBorder);
+
+    return 0;
+}
