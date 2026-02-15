@@ -1,0 +1,72 @@
+#include <iostream>
+using namespace std;
+
+/*
+Problem Statement:
+Create a binary tree using preorder serialized input (0 represents NULL).
+From root to leaves, update each parent node’s value as the average of its children’s values.
+If a node has only one child, copy that child’s value to the parent.
+Leaf nodes remain unchanged.
+Print the preorder traversal of the updated tree.
+
+Sample Input:
+18 8 25 2 0 0 10 0 0 35 0 0 16 12 4 0 0 0 28 0 9 0 0
+
+Sample Output:
+12 30 6 2 10 35 20 4 4 9 9
+*/
+
+struct BinaryTreeNode {
+    int data;
+    BinaryTreeNode* leftChild;
+    BinaryTreeNode* rightChild;
+};
+
+BinaryTreeNode* rootNode = NULL;
+
+void buildTreeFromPreorder(BinaryTreeNode*& currentNode, int value) {
+    cin >> value;
+    if (value == 0) return;
+
+    currentNode = new BinaryTreeNode;
+    currentNode->data = value;
+    currentNode->leftChild = currentNode->rightChild = NULL;
+
+    buildTreeFromPreorder(currentNode->leftChild, value);
+    buildTreeFromPreorder(currentNode->rightChild, value);
+}
+
+void updateNodeValuesWithChildrenAverage(BinaryTreeNode*& currentNode) {
+    if (currentNode == NULL) return;
+
+    if (currentNode->leftChild != NULL && currentNode->rightChild != NULL) {
+        currentNode->data = (currentNode->leftChild->data + currentNode->rightChild->data) / 2;
+    }
+    else if (currentNode->leftChild != NULL || currentNode->rightChild != NULL) {
+        if (currentNode->rightChild) {
+            currentNode->data = currentNode->rightChild->data;
+        }
+        if (currentNode->leftChild) {
+            currentNode->data = currentNode->leftChild->data;
+        }
+    }
+
+    updateNodeValuesWithChildrenAverage(currentNode->leftChild);
+    updateNodeValuesWithChildrenAverage(currentNode->rightChild);
+}
+
+void printPreorderTraversal(BinaryTreeNode* currentNode) {
+    if (currentNode == NULL) return;
+
+    cout << currentNode->data << " ";
+    printPreorderTraversal(currentNode->leftChild);
+    printPreorderTraversal(currentNode->rightChild);
+}
+
+int main() {
+    int inputValue;
+    buildTreeFromPreorder(rootNode, inputValue);
+    updateNodeValuesWithChildrenAverage(rootNode);
+    printPreorderTraversal(rootNode);
+    return 0;
+}
