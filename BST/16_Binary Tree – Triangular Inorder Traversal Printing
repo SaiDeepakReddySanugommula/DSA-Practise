@@ -1,0 +1,73 @@
+#include <iostream>
+using namespace std;
+
+/*
+Problem Statement:
+Construct a binary tree using preorder serialized input (0 represents NULL).
+Without modifying the tree contents and without using any extra arrays or data structures,
+print the nodes in a triangular pattern using inorder traversal logic.
+
+For each line, skip the first i nodes in inorder and print the remaining nodes.
+
+Sample Input:
+5 9 3 0 0 6 0 4 0 8 2 0 0 7 0 0
+
+Sample Output:
+3 9 6 5 4 2 8 7
+9 6 5 4 2 8 7
+6 5 4 2 8 7
+5 4 2 8 7
+4 2 8 7
+2 8 7
+8 7
+7
+*/
+
+struct BinaryTreeNode {
+    int data;
+    BinaryTreeNode* leftChild;
+    BinaryTreeNode* rightChild;
+};
+
+BinaryTreeNode* rootNode = NULL;
+
+void buildTreeFromPreorder(BinaryTreeNode*& currentNode, int value, int& totalNodes) {
+    cin >> value;
+    if (value == 0) return;
+
+    totalNodes++;
+    currentNode = new BinaryTreeNode;
+    currentNode->data = value;
+    currentNode->leftChild = currentNode->rightChild = NULL;
+
+    buildTreeFromPreorder(currentNode->leftChild, value, totalNodes);
+    buildTreeFromPreorder(currentNode->rightChild, value, totalNodes);
+}
+
+void printInorderFromIndex(BinaryTreeNode* currentNode, int& skipCount) {
+    if (currentNode == NULL) return;
+
+    printInorderFromIndex(currentNode->leftChild, skipCount);
+
+    if (skipCount <= 0) {
+        cout << currentNode->data << " ";
+    }
+    skipCount--;
+
+    printInorderFromIndex(currentNode->rightChild, skipCount);
+}
+
+int main() {
+    int inputValue;
+    int nodeCount = 0;
+
+    buildTreeFromPreorder(rootNode, inputValue, nodeCount);
+
+    for (int i = 0; i < nodeCount; i++) {
+        int skipNodes = i;
+        printInorderFromIndex(rootNode, skipNodes);
+        cout << endl;
+    }
+
+    return 0;
+}
