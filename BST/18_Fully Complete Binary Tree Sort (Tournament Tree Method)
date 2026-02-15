@@ -1,0 +1,84 @@
+/*
+Problem Statement:
+Construct a fully complete binary tree (every non-leaf node has exactly two children)
+using the given leaf node values.
+
+Each internal node stores the minimum value of its two children.
+Repeatedly move the minimum leaf value to the root and print it.
+After printing, mark that leaf as removed and update the tree.
+Repeat until all leaf nodes are processed.
+
+This produces sorted output in ascending order.
+
+Sample Input:
+9 5 3 6 2 7 1 8
+
+Sample Output:
+1 2 3 5 6 7 8 9
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinaryTreeNode {
+    int data;
+    BinaryTreeNode *leftChild;
+    BinaryTreeNode *rightChild;
+};
+
+BinaryTreeNode* rootNode = NULL;
+
+BinaryTreeNode* buildCompleteTreeFromLeaves(int leafValues[], int leftIndex, int rightIndex) {
+    BinaryTreeNode* newNode = new BinaryTreeNode;
+    newNode->leftChild = NULL;
+    newNode->rightChild = NULL;
+
+    if (leftIndex == rightIndex) {
+        newNode->data = leafValues[leftIndex];
+        return newNode;
+    }
+
+    int middleIndex = (leftIndex + rightIndex) / 2;
+
+    newNode->leftChild = buildCompleteTreeFromLeaves(leafValues, leftIndex, middleIndex);
+    newNode->rightChild = buildCompleteTreeFromLeaves(leafValues, middleIndex + 1, rightIndex);
+
+    newNode->data = min(newNode->leftChild->data, newNode->rightChild->data);
+    return newNode;
+}
+
+void removeMinimumLeafAndUpdate(BinaryTreeNode* currentNode, int minimumValue) {
+    if (currentNode->leftChild == NULL && currentNode->rightChild == NULL) {
+        if (currentNode->data == minimumValue) {
+            currentNode->data = 100000;
+        }
+        return;
+    }
+
+    if (currentNode->leftChild->data == minimumValue) {
+        removeMinimumLeafAndUpdate(currentNode->leftChild, minimumValue);
+    } else {
+        removeMinimumLeafAndUpdate(currentNode->rightChild, minimumValue);
+    }
+
+    currentNode->data = min(currentNode->leftChild->data, currentNode->rightChild->data);
+}
+
+int main() {
+    int leafValues[100];
+    int totalLeaves = 0;
+
+    while (cin >> leafValues[totalLeaves]) {
+        totalLeaves++;
+    }
+
+    rootNode = buildCompleteTreeFromLeaves(leafValues, 0, totalLeaves - 1);
+
+    for (int i = 0; i < totalLeaves; i++) {
+        cout << rootNode->data << " ";
+        int minimumValue = rootNode->data;
+        removeMinimumLeafAndUpdate(rootNode, minimumValue);
+    }
+
+    return 0;
+}
