@@ -1,0 +1,80 @@
+/*
+Problem Statement:
+Create a Binary Search Tree (BST) using the given input values terminated by -1.
+For every node in the BST, print the subtree rooted at that node. Each line of output
+should start with the root of that subtree followed by all its node values in sorted
+(inorder) order.
+
+Input:
+5 8 3 4 1 9 6 7 2 -1
+
+Output:
+5 1 2 3 4 5 6 7 8 9
+3 1 2 3 4
+1 1 2
+2 2
+4 4
+8 6 7 8 9
+6 6 7
+7 7
+9 9
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinarySearchTreeNode {
+    int data;
+    BinarySearchTreeNode *leftChild, *rightChild;
+};
+
+BinarySearchTreeNode* rootNode = NULL;
+
+void insertIntoBST(BinarySearchTreeNode*& rootNode, int value) {
+    if (rootNode == NULL) {
+        rootNode = new BinarySearchTreeNode;
+        rootNode->data = value;
+        rootNode->leftChild = NULL;
+        rootNode->rightChild = NULL;
+        return;
+    }
+    if (rootNode->data > value) {
+        insertIntoBST(rootNode->leftChild, value);
+    } else {
+        insertIntoBST(rootNode->rightChild, value);
+    }
+}
+
+void printInorder(BinarySearchTreeNode* rootNode) {
+    if (rootNode == NULL) return;
+    printInorder(rootNode->leftChild);
+    cout << rootNode->data << " ";
+    printInorder(rootNode->rightChild);
+}
+
+void printAllSubtrees(BinarySearchTreeNode* rootNode, int mode) {
+    if (mode == 1) {
+        if (rootNode == NULL) return;
+        printInorder(rootNode);
+        return;
+    }
+
+    if (mode == 0) {
+        if (rootNode == NULL) return;
+        cout << rootNode->data << " ";
+        printInorder(rootNode);
+        cout << endl;
+        printAllSubtrees(rootNode->leftChild, 0);
+        printAllSubtrees(rootNode->rightChild, 0);
+    }
+}
+
+int main() {
+    int inputValue;
+    while (cin >> inputValue && inputValue != -1) {
+        insertIntoBST(rootNode, inputValue);
+    }
+
+    printAllSubtrees(rootNode, 0);
+    return 0;
+}
