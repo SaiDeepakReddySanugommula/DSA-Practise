@@ -1,0 +1,94 @@
+/*
+Problem Statement:
+Define the node structure of a Binary Search Tree (BST). Create two BSTs T1 and T2
+from the given inputs. Write efficient functions to find and print the common data
+values present in both T1 and T2 (intersection of BSTs). Also print the count of
+such common elements.
+
+Input Format:
+First BST elements terminated by -1
+Second BST elements terminated by -1
+
+Sample Input:
+5 9 2 3 27 15 -1
+8 5 18 15 3 45 27 12 -1
+
+Sample Output:
+5 3 15 27
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinarySearchTreeNode {
+    int data;
+    BinarySearchTreeNode *leftChild, *rightChild;
+};
+
+BinarySearchTreeNode* firstTreeRoot = NULL;
+BinarySearchTreeNode* secondTreeRoot = NULL;
+
+BinarySearchTreeNode*& findMinimumNode(BinarySearchTreeNode* &rootNode) {
+    if (rootNode->leftChild == NULL) {
+        return rootNode;
+    }
+    return findMinimumNode(rootNode->leftChild);
+}
+
+void insertIntoBST(BinarySearchTreeNode* &rootNode, int value) {
+    if (rootNode == NULL) {
+        rootNode = new BinarySearchTreeNode;
+        rootNode->data = value;
+        rootNode->leftChild = NULL;
+        rootNode->rightChild = NULL;
+        return;
+    }
+    if (rootNode->data > value) {
+        insertIntoBST(rootNode->leftChild, value);
+    } else {
+        insertIntoBST(rootNode->rightChild, value);
+    }
+}
+
+void deleteMinimumNode(BinarySearchTreeNode* &rootNode) {
+    if (rootNode->leftChild == NULL && rootNode->rightChild == NULL) {
+        rootNode = NULL;
+        return;
+    } else {
+        rootNode->leftChild = rootNode->rightChild->leftChild;
+        rootNode->data = rootNode->rightChild->data;
+        rootNode->rightChild = rootNode->rightChild->rightChild;
+    }
+}
+
+int main() {
+    int inputValue;
+
+    while (cin >> inputValue && inputValue != -1) {
+        insertIntoBST(firstTreeRoot, inputValue);
+    }
+
+    while (cin >> inputValue && inputValue != -1) {
+        insertIntoBST(secondTreeRoot, inputValue);
+    }
+
+    int commonCount = 0;
+
+    while (firstTreeRoot != NULL && secondTreeRoot != NULL) {
+        int minValueFirstTree = findMinimumNode(firstTreeRoot)->data;
+        int minValueSecondTree = findMinimumNode(secondTreeRoot)->data;
+
+        if (minValueFirstTree > minValueSecondTree) {
+            deleteMinimumNode(findMinimumNode(secondTreeRoot));
+        } else if (minValueFirstTree < minValueSecondTree) {
+            deleteMinimumNode(findMinimumNode(firstTreeRoot));
+        } else {
+            cout << minValueFirstTree << " ";
+            commonCount++;
+            deleteMinimumNode(findMinimumNode(firstTreeRoot));
+            deleteMinimumNode(findMinimumNode(secondTreeRoot));
+        }
+    }
+
+    return 0;
+}
