@@ -1,0 +1,79 @@
+/*
+Problem Statement:
+Construct a binary tree using given Preorder (DLR) and Inorder (LDR) traversal sequences
+(terminated by '#'). Then print the serialized preorder traversal of the constructed tree,
+where NULL pointers are represented using '#'.
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinaryTreeNode {
+    int data;
+    BinaryTreeNode *leftChild, *rightChild;
+};
+
+BinaryTreeNode* treeRoot = NULL;
+
+int findPositionInInorder(char inorderTraversal[], int startIndex, int endIndex, char targetValue) {
+    int index = startIndex;
+    while (index <= endIndex) {
+        if (inorderTraversal[index] == targetValue) return index;
+        index++;
+    }
+    return -1;
+}
+
+void buildTreeFromPreAndIn(BinaryTreeNode*& currentRoot,
+                           char inorderTraversal[],
+                           char preorderTraversal[],
+                           int startIndex,
+                           int endIndex,
+                           int& preorderIndex) {
+    if (startIndex > endIndex) return;
+
+    currentRoot = new BinaryTreeNode;
+    currentRoot->data = preorderTraversal[preorderIndex];
+
+    int inorderPosition = findPositionInInorder(inorderTraversal, startIndex, endIndex, preorderTraversal[preorderIndex]);
+    preorderIndex++;
+
+    buildTreeFromPreAndIn(currentRoot->leftChild, inorderTraversal, preorderTraversal, startIndex, inorderPosition - 1, preorderIndex);
+    buildTreeFromPreAndIn(currentRoot->rightChild, inorderTraversal, preorderTraversal, inorderPosition + 1, endIndex, preorderIndex);
+}
+
+void printSerializedPreorder(BinaryTreeNode* currentRoot) {
+    if (currentRoot == NULL) {
+        cout << "#";
+        return;
+    }
+    cout << (char)(currentRoot->data);
+    printSerializedPreorder(currentRoot->leftChild);
+    printSerializedPreorder(currentRoot->rightChild);
+}
+
+int main() {
+    char preorderTraversal[100], inorderTraversal[100];
+    int startIndex = 0, endIndex = 0;
+    char inputChar;
+    int index = 0;
+
+    while (cin >> inputChar && inputChar != '#') {
+        preorderTraversal[index] = inputChar;
+        index++;
+    }
+
+    endIndex = index - 1;
+    index = 0;
+
+    while (cin >> inputChar && inputChar != '#') {
+        inorderTraversal[index] = inputChar;
+        index++;
+    }
+
+    int preorderIndex = 0;
+    buildTreeFromPreAndIn(treeRoot, inorderTraversal, preorderTraversal, startIndex, endIndex, preorderIndex);
+    printSerializedPreorder(treeRoot);
+
+    return 0;
+}
