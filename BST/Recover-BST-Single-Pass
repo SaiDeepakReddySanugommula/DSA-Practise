@@ -1,0 +1,113 @@
+/*
+ * PROBLEM STATEMENT: Recover a Binary Search Tree (BST)
+ * ---------------------------------------------------
+ * 1. Task: Identify and fix a Binary Tree where exactly two nodes have been 
+ * swapped, violating the BST property.
+ * 2. Constraints:
+ * - The tree is created from a serialized preorder (DLR) input (0 for NULL).
+ * - The tree must be traversed only once (O(N) time complexity).
+ * - Each node should be touched only once during the check.
+ * 3. Output Requirement: 
+ * - After fixing the tree, output the nodes in "Post-Reverse-Post" order 
+ * (Right child, Left child, then Root).
+ *
+ * Example:
+ * Input (Preorder): 5 3 1 0 2 0 0 6 0 0 8 4 0 7 0 0 9 0 0
+ * Output: 9 7 6 8 2 1 4 3 5
+ */
+
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+// Structure for the Binary Search Tree Node
+struct Node {
+    int data;
+    Node *left, *right;
+    
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+/**
+ * Builds the tree using Preorder (Root-Left-Right) input data.
+ * The value '0' is treated as a NULL pointer.
+ */
+void buildTree(Node* &root) {
+    int value;
+    if (!(cin >> value) || value == 0) {
+        root = nullptr;
+        return;
+    }
+
+    root = new Node(value);
+    buildTree(root->left);
+    buildTree(root->right);
+}
+
+// Global pointers to track misplaced nodes during a single Inorder pass
+Node *firstViolation = nullptr;
+Node *secondViolation = nullptr;
+Node *previousNode = nullptr;
+
+/**
+ * findSwappedNodes: Performs a single Inorder traversal.
+ * Since a BST Inorder traversal is always sorted, any dip in value 
+ * (where previous > current) indicates a misplaced node.
+ */
+void findSwappedNodes(Node* current) {
+    if (!current) return;
+
+    // Traverse Left Subtree
+    findSwappedNodes(current->left);
+
+    // Check for BST violation
+    if (previousNode && (previousNode->data > current->data)) {
+        // If this is the first violation, the misplaced node is the 'previous' one.
+        if (!firstViolation) {
+            firstViolation = previousNode;
+        }
+        // The second misplaced node is always the 'current' one in a violation pair.
+        secondViolation = current;
+    }
+    
+    // Update 'previous' for the next step in the Inorder sequence
+    previousNode = current;
+
+    // Traverse Right Subtree
+    findSwappedNodes(current->right);
+}
+
+/**
+ * printPostReversePost: Traverses the tree in Right -> Left -> Root order.
+ * This matches the specific "post-revpost" sequence requested in the prompt.
+ */
+void printPostReversePost(Node* root) {
+    if (!root) return;
+    
+    printPostReversePost(root->right);
+    printPostReversePost(root->left);
+    
+    cout << root->data << " ";
+}
+
+int main() {
+    Node* root = nullptr;
+
+    // Step 1: Create the tree from input
+    buildTree(root);
+
+    // Step 2: Identify the two swapped nodes using a single Inorder pass
+    findSwappedNodes(root);
+
+    // Step 3: Swap the data values back to restore BST properties
+    if (firstViolation && secondViolation) {
+        swap(firstViolation->data, secondViolation->data);
+    }
+
+    // Step 4: Display the result in the requested traversal order
+    printPostReversePost(root);
+    cout << endl;
+
+    return 0;
+}
