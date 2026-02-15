@@ -1,0 +1,196 @@
+/*
+ * PROBLEM STATEMENT: Linked List Operations - 2 (Alias of Genius)
+ * -------------------------------------------------------------
+ * 1. Build a Singly Linked List from input (terminated by -1).
+ * 2. Perform the following sequence of operations:
+ * - Add a node to the front of the list.
+ * - Insert a new value 'x' specifically before a target value 'y'.
+ * - Insert a new value 'x' specifically after a target value 'y'.
+ * - Delete a node by its data value 'k'.
+ * - Identify the minimum value in the list and delete its node.
+ * - Identify the maximum value in the list and delete its node.
+ * 3. Print the list after every successful modification.
+ */
+
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+// Standard node definition
+struct lnode {
+    int data;
+    lnode* next;
+};
+
+// Global head for this specific implementation
+lnode* head = nullptr;
+
+// Quick helper to allocate new memory
+lnode* createlNode(int x) {
+    lnode* p = new lnode;
+    p->data = x;
+    p->next = nullptr;
+    return p;
+}
+
+// Personal note: Easy head update
+void addAtBeginning(lnode* &head, int x) {
+    lnode* p = createlNode(x);
+    p->next = head;
+    head = p;
+}
+
+// Standard tail insertion
+void addAtEnd(lnode* &head, int x) {
+    lnode* p = createlNode(x);
+    if (head == nullptr) {
+        head = p;
+        return;
+    }
+    lnode* ref = head;
+    while (ref->next != nullptr) {
+        ref = ref->next;
+    }
+    ref->next = p;
+}
+
+/* * Note for future me: Insertion before 'y' requires 
+ * checking the head first, then looking one node ahead 
+ * so we can update the 'next' pointer of the previous node.
+ */
+void addBefore(lnode* &head, int x, int y) {
+    if (head == nullptr) return;
+    if (head->data == y) {
+        addAtBeginning(head, x);
+        return;
+    }
+    lnode* p = head;
+    // Iterate until we find the node that points to 'y'
+    while (p->next != nullptr && p->next->data != y) {
+        p = p->next;
+    }
+    if (p->next != nullptr) {
+        lnode* q = createlNode(x);
+        q->next = p->next;
+        p->next = q;
+    }
+}
+
+// Inserting after 'y' is simpler since we don't need the previous node
+void addAfter(lnode* &head, int x, int y) {
+    if (head == nullptr) return;
+    lnode* p = head;
+    while (p != nullptr && p->data != y) {
+        p = p->next;
+    }
+    if (p != nullptr) {
+        lnode* q = createlNode(x);
+        q->next = p->next;
+        p->next = q;
+    }
+}
+
+/* * Standard deletion logic:
+ * Handle the head separately, then search for the key.
+ */
+void deletee(lnode* &head, int x) {
+    if (head == nullptr) return;
+    lnode* p = head;
+    if (p->data == x) {
+        head = head->next;
+        delete p;
+        return;
+    }
+    while (p->next != nullptr && p->next->data != x) {
+        p = p->next;
+    }
+    if (p->next != nullptr) {
+        lnode *q = p->next;
+        p->next = p->next->next;
+        delete q;
+    }
+}
+
+// Utilities to find min/max before deletion
+int minn(lnode *head) {
+    if (head == nullptr) return -1;
+    int res = head->data;
+    lnode* curr = head;
+    while (curr != nullptr) {
+        res = min(res, curr->data);
+        curr = curr->next;
+    }
+    return res;
+}
+
+int maxx(lnode *head) {
+    if (head == nullptr) return -1;
+    int res = head->data;
+    lnode* curr = head;
+    while (curr != nullptr) {
+        res = max(res, curr->data);
+        curr = curr->next;
+    }
+    return res;
+}
+
+
+void print(lnode *head) {
+    while (head != nullptr) {
+        cout << head->data << " ";
+        head = head->next;
+    }
+    cout << endl;
+}
+
+int main() {
+    int t;
+    // Termination of input is -1 as per requirements
+    while (cin >> t && t != -1) {
+        addAtEnd(head, t);
+    }
+    print(head);
+
+    // 1. Add to front
+    int k;
+    if (cin >> k) {
+        addAtBeginning(head, k);
+        print(head);
+    }
+
+    // 2. Add x before y
+    int x, y;
+    if (cin >> x >> y) {
+        addBefore(head, x, y);
+        print(head);
+    }
+
+    // 3. Add x after y
+    if (cin >> x >> y) {
+        addAfter(head, x, y);
+        print(head);
+    }
+
+    // 4. Delete specific key
+    if (cin >> k) {
+        deletee(head, k);
+        print(head);
+    }
+
+    // 5. Delete Min
+    int min1 = minn(head);
+    if (min1 != -1) {
+        deletee(head, min1);
+        print(head);
+    }
+
+    // 6. Delete Max
+    int max1 = maxx(head);
+    if (max1 != -1) {
+        deletee(head, max1);
+        print(head);
+    }
+
+    return 0;
+}
