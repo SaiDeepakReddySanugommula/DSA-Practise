@@ -1,0 +1,121 @@
+/*
+ * PROBLEM STATEMENT: Binary Search Tree Sequential Deletion
+ * ---------------------------------------------------------
+ * 1. Task: Construct a BST from a list of integers. Then, perform sequential 
+ * deletions based on a given sequence and print the Preorder traversal 
+ * after each removal.
+ * 2. Constraints:
+ * - Input ends with -1.
+ * - Deletion sequence ends with -1.
+ * - Maintain BST integrity after every deletion.
+ * 3. Output Requirement:
+ * - Print the tree in Preorder (Root-Left-Right) format after each element 
+ * from the deletion sequence is removed.
+ *
+ * Example:
+ * Input: 5 8 3 4 1 9 6 7 2 -1
+ * Deletion: 4, 3, 8, 7
+ */
+
+#include <iostream>
+
+using namespace std;
+
+// Structure for the Binary Search Tree Node
+struct Node {
+    int data;
+    Node *left, *right;
+
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+/**
+ * Inserts a new value into the BST following standard rules.
+ */
+void insert(Node* &root, int value) {
+    if (root == nullptr) {
+        root = new Node(value);
+        return;
+    }
+    if (value < root->data) {
+        insert(root->left, value);
+    } else {
+        insert(root->right, value);
+    }
+}
+
+/**
+ * Finds the maximum value node in a given subtree.
+ * Used to find the In-order Predecessor.
+ */
+Node* findMax(Node* root) {
+    while (root && root->right != nullptr) {
+        root = root->right;
+    }
+    return root;
+}
+
+/**
+ * Deletes a node with the specified value from the BST.
+ * Handles three cases: Leaf node, One child, and Two children.
+ */
+Node* deleteNode(Node* root, int key) {
+    if (root == nullptr) return nullptr;
+
+    // Standard BST Search
+    if (key < root->data) {
+        root->left = deleteNode(root->left, key);
+    } else if (key > root->data) {
+        root->right = deleteNode(root->right, key);
+    } else {
+        // Node found: Case 1 & 2: Leaf or Single Child
+        if (root->left == nullptr) {
+            Node* temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == nullptr) {
+            Node* temp = root->left;
+            delete root;
+            return temp;
+        }
+
+        // Case 3: Two Children
+        // Replace with In-order Predecessor (Max of left subtree)
+        Node* temp = findMax(root->left);
+        root->data = temp->data;
+        root->left = deleteNode(root->left, temp->data);
+    }
+    return root;
+}
+
+
+
+/**
+ * Standard Preorder Traversal (Root -> Left -> Right).
+ */
+void printPreorder(Node* root) {
+    if (root == nullptr) return;
+    cout << root->data << " ";
+    printPreorder(root->left);
+    printPreorder(root->right);
+}
+
+int main() {
+    Node* root = nullptr;
+    int inputVal;
+
+    // Step 1: Build the BST
+    while (cin >> inputVal && inputVal != -1) {
+        insert(root, inputVal);
+    }
+
+    // Step 2: Sequential Deletion
+    int deleteVal;
+    while (cin >> deleteVal && deleteVal != -1) {
+        root = deleteNode(root, deleteVal);
+        printPreorder(root);
+        cout << endl;
+    }
+
+    return 0;
+}
