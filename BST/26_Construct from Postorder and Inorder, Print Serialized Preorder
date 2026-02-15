@@ -1,0 +1,88 @@
+/*
+Problem Statement:
+Construct a binary tree using the given Postorder (LRD) and Inorder (LDR) traversals.
+Then print the tree as serialized preorder traversal where NULL nodes are represented by '#'.
+
+Sample Input:
+Postorder: QLMHDEBNIFSWZYXVUTRPKJGCA#
+Inorder  : DQLHMBEANIFCPSRTVWXZYUJKG#
+
+Sample Output (Serialized Preorder):
+ABD#HLQ###M##E##CFIN####GJP#RS##T#UV#XW###YZ###K###
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinaryTreeNode {
+    char data;
+    BinaryTreeNode *leftChild, *rightChild;
+};
+
+BinaryTreeNode* treeRoot = NULL;
+
+int findIndexInInorder(char inorderTraversal[], int startIndex, int endIndex, char targetValue) {
+    for (int index = startIndex; index <= endIndex; index++) {
+        if (inorderTraversal[index] == targetValue)
+            return index;
+    }
+    return -1;
+}
+
+void constructTreeFromPostAndIn(BinaryTreeNode*& currentRoot,
+                                char postorderTraversal[],
+                                char inorderTraversal[],
+                                int startIndex,
+                                int endIndex,
+                                int& postIndex) {
+
+    if (startIndex > endIndex) {
+        currentRoot = NULL;
+        return;
+    }
+
+    currentRoot = new BinaryTreeNode;
+    currentRoot->data = postorderTraversal[postIndex];
+
+    int inorderPosition = findIndexInInorder(inorderTraversal, startIndex, endIndex, postorderTraversal[postIndex]);
+    postIndex--;
+
+    constructTreeFromPostAndIn(currentRoot->rightChild, postorderTraversal, inorderTraversal,
+                               inorderPosition + 1, endIndex, postIndex);
+
+    constructTreeFromPostAndIn(currentRoot->leftChild, postorderTraversal, inorderTraversal,
+                               startIndex, inorderPosition - 1, postIndex);
+}
+
+void printSerializedPreorder(BinaryTreeNode* currentRoot) {
+    if (currentRoot == NULL) {
+        cout << "#";
+        return;
+    }
+    cout << currentRoot->data;
+    printSerializedPreorder(currentRoot->leftChild);
+    printSerializedPreorder(currentRoot->rightChild);
+}
+
+int main() {
+    char postorderTraversal[100], inorderTraversal[100];
+    char inputChar;
+    int index = 0;
+
+    while (cin >> inputChar && inputChar != '#') {
+        postorderTraversal[index++] = inputChar;
+    }
+
+    int totalNodes = index;
+    index = 0;
+
+    while (cin >> inputChar && inputChar != '#') {
+        inorderTraversal[index++] = inputChar;
+    }
+
+    int postIndex = totalNodes - 1;
+    constructTreeFromPostAndIn(treeRoot, postorderTraversal, inorderTraversal, 0, totalNodes - 1, postIndex);
+
+    printSerializedPreorder(treeRoot);
+    return 0;
+}
