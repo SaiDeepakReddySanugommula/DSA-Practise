@@ -1,0 +1,113 @@
+/*
+Problem Statement:
+Construct a binary tree using serialized preorder input where '#' represents NULL.
+
+Iteratively perform:
+1) Preorder traversal
+2) Inorder traversal
+
+Also count and print the number of push operations performed on the stack
+during each traversal.
+
+Sample Input:
+ABD#HLQ###M#E##CFIN####GJP#RS##T#UV#XW##YZ####K###
+
+Sample Output:
+Preorder : ABDHLQMECFINGJPRSTUVXWYZK
+Number of Pushes : 25
+Inorder : DQLHMBEANIFCPSRTVWXZYUJKG
+Number of Pushes : 25
+*/
+
+#include <iostream>
+using namespace std;
+
+struct BinaryTreeNode {
+    char data;
+    BinaryTreeNode* leftChild;
+    BinaryTreeNode* rightChild;
+};
+
+BinaryTreeNode* rootNode = NULL;
+
+void buildTreeFromSerializedPreorder(BinaryTreeNode*& currentRoot) {
+    char value;
+    cin >> value;
+
+    if (value == '#') return;
+
+    currentRoot = new BinaryTreeNode;
+    currentRoot->data = value;
+    currentRoot->leftChild = NULL;
+    currentRoot->rightChild = NULL;
+
+    buildTreeFromSerializedPreorder(currentRoot->leftChild);
+    buildTreeFromSerializedPreorder(currentRoot->rightChild);
+}
+
+struct Stack {
+    int topIndex = -1;
+    BinaryTreeNode* elements[50];
+} traversalStack;
+
+void pushNode(Stack& stackRef, BinaryTreeNode* node) {
+    if (stackRef.topIndex >= 49) return;
+    stackRef.topIndex++;
+    stackRef.elements[stackRef.topIndex] = node;
+}
+
+BinaryTreeNode* popNode(Stack& stackRef) {
+    if (stackRef.topIndex == -1) return NULL;
+    return stackRef.elements[stackRef.topIndex--];
+}
+
+int main() {
+    buildTreeFromSerializedPreorder(rootNode);
+
+    pushNode(traversalStack, rootNode);
+    int pushCount = 1;
+
+    while (traversalStack.topIndex != -1) {
+        BinaryTreeNode* currentNode = popNode(traversalStack);
+        cout << currentNode->data;
+
+        if (currentNode->rightChild) {
+            pushNode(traversalStack, currentNode->rightChild);
+            pushCount++;
+        }
+        if (currentNode->leftChild) {
+            pushNode(traversalStack, currentNode->leftChild);
+            pushCount++;
+        }
+    }
+
+    cout << endl << pushCount << endl;
+
+    traversalStack.topIndex = -1;
+    pushNode(traversalStack, rootNode);
+    pushCount = 1;
+
+    while (traversalStack.topIndex != -1) {
+        BinaryTreeNode* currentNode = traversalStack.elements[traversalStack.topIndex];
+
+        if (currentNode->leftChild) {
+            pushNode(traversalStack, currentNode->leftChild);
+            pushCount++;
+            currentNode->leftChild = NULL;
+        } 
+        else if (currentNode->rightChild) {
+            cout << currentNode->data;
+            popNode(traversalStack);
+            pushCount++;
+            pushNode(traversalStack, currentNode->rightChild);
+            currentNode->rightChild = NULL;
+        } 
+        else {
+            cout << popNode(traversalStack)->data;
+        }
+    }
+
+    cout << endl << pushCount;
+
+    return 0;
+}
