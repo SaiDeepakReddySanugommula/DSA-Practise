@@ -1,0 +1,98 @@
+/*
+Title: Merge Two Binary Search Trees Using Two Stacks (Single Traversal)
+
+Description:
+Construct two Binary Search Trees T1 and T2 from input.
+Merge their elements into a third BST T3 using two stacks.
+Each tree must be traversed only once.
+Finally, print the preorder traversal of T3.
+
+Input:
+T1 elements ending with -1
+T2 elements ending with -1
+
+Output:
+Preorder traversal of merged BST T3
+*/
+
+#include <iostream>
+using namespace std;
+
+struct stack {
+    int top = -1;
+    int arr[50];
+} s1, s2;
+
+struct bstnode {
+    int data;
+    bstnode *lc, *rc;
+};
+
+bstnode* T1 = NULL;
+bstnode* T2 = NULL;
+bstnode* T3 = NULL;
+
+void create(bstnode*& root, int k) {
+    if (root == NULL) {
+        root = new bstnode;
+        root->data = k;
+        root->lc = NULL;
+        root->rc = NULL;
+        return;
+    }
+    if (root->data > k) create(root->lc, k);
+    else create(root->rc, k);
+}
+
+void push(stack& s, int k) {
+    if (s.top >= 49) return;
+    s.arr[++s.top] = k;
+}
+
+int pop(stack& s) {
+    if (s.top == -1) return -1;
+    return s.arr[s.top--];
+}
+
+void func(bstnode* root, stack& s) {
+    if (root == NULL) return;
+    func(root->rc, s);
+    func(root->lc, s);
+    push(s, root->data);
+}
+
+void preorder(bstnode* root) {
+    if (root == NULL) return;
+    cout << root->data << " ";
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+void merge(bstnode*& root, stack s1, stack s2) {
+    while (s1.top != -1 && s2.top != -1) {
+        create(root, pop(s1));
+        create(root, pop(s2));
+    }
+    while (s1.top != -1) create(root, pop(s1));
+    while (s2.top != -1) create(root, pop(s2));
+}
+
+int main() {
+    int t;
+
+    while (cin >> t && t != -1) {
+        create(T1, t);
+    }
+
+    while (cin >> t && t != -1) {
+        create(T2, t);
+    }
+
+    func(T2, s2);
+    func(T1, s1);
+
+    merge(T3, s1, s2);
+    preorder(T3);
+
+    return 0;
+}
