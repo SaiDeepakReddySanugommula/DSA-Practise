@@ -1,0 +1,79 @@
+/*
+Title: Cartesian Tree Construction from Inorder Traversal and Preorder Printing
+
+Description:
+This program constructs a Cartesian Tree from a given inorder traversal sequence
+stored in an array. A Cartesian Tree satisfies the min-heap property, where the
+parent node is smaller than its children, and its inorder traversal matches the
+given sequence. The tree is built recursively by selecting the minimum element
+as root for each subarray and constructing left and right subtrees. Finally,
+the constructed tree is printed in preorder traversal.
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc;
+    bstnode* rc;
+};
+
+bstnode* root = NULL;
+
+void create(bstnode*& root, int k){
+    if(root == NULL){
+        root = new bstnode;
+        root->data = k;
+        root->lc = NULL;
+        root->rc = NULL;
+        return;
+    }
+    if(root->data > k) create(root->lc, k);
+    else create(root->rc, k);
+}
+
+int findSmaller(int arr[], int n, int l, int h){
+    int y = l;
+    int res = y;
+    while(y <= h){
+        if(arr[y] < arr[res]) res = y;
+        y++;
+    }
+    return res;
+}
+
+void func(bstnode *&root, int arr[], int n, int l, int h){
+    if(l < 0 || l > h || h >= n) return;
+
+    int currentIndex = findSmaller(arr, n, l, h);
+    int currentNode = arr[currentIndex];
+
+    create(root, currentNode);
+
+    func(root->lc, arr, n, l, currentIndex - 1);
+    func(root->rc, arr, n, currentIndex + 1, h);
+}
+
+void preorder(bstnode* root){
+    if(root == NULL) return;
+    cout << root->data << " ";
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+int main(){
+    int arr[100];
+    int n = 0;
+    int t;
+
+    while(cin >> t && t != -1){
+        arr[n] = t;
+        n++;
+    }
+
+    func(root, arr, n, 0, n - 1);
+    preorder(root);
+
+    return 0;
+}
