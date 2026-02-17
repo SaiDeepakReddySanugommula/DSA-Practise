@@ -1,0 +1,136 @@
+/*
+Title: Construct Binary Tree from Postorder Traversal (LRD) and Print Level Order Line by Line
+
+Description:
+Build a Binary Search Tree using the given postorder traversal input (LRD order),
+without reversing the input. Recursively identify root from postorder, split left
+and right subtrees, and insert using the given BST creation logic. Then print the
+tree level by level, each level on a new line.
+
+Problem Statement:
+Create a binary tree with given input data of postorder traversal (LRD).
+Do NOT construct by reverse reading. Construct using proper LRD logic.
+Then print all levels line by line.
+
+Input:
+2 1 4 3 7 6 9 8 5 -1
+
+Output:
+5
+3 8
+1 4 6 9
+2 7
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc;
+    bstnode* rc;
+};
+
+struct queue{
+    bstnode* arr[100];
+    int f = -1;
+    int r = -1;
+} q;
+
+bstnode* root = NULL;
+
+void enque(queue &q, bstnode* root){
+    if(q.f == -1){
+        q.f = 0;
+        q.r = 0;
+        q.arr[q.r] = root;
+        return;
+    }
+    q.r++;
+    q.arr[q.r] = root;
+}
+
+bstnode* deque(queue &q){
+    bstnode* temp = q.arr[q.f];
+    if(q.f == q.r){
+        q.f = -1;
+        q.r = -1;
+    }
+    else{
+        q.f++;
+    }
+    return temp;
+}
+
+void create(bstnode* &root, int k){
+    if(root == NULL){
+        root = new bstnode;
+        root->data = k;
+        root->lc = NULL;
+        root->rc = NULL;
+        return;
+    }
+    if(root->data > k)
+        create(root->lc, k);
+    else
+        create(root->rc, k);
+}
+
+int findIndex(int arr[], int l, int h, int k){
+    int j = h;
+    while(j >= l){
+        if(arr[j] < k) return j;
+        j--;
+    }
+    return -1;
+}
+
+void func(bstnode* &root, int arr[], int l, int h){
+    if(l > h) return;
+
+    int currentNode = arr[h];
+    create(root, currentNode);
+
+    if(l == h) return;
+
+    int k = findIndex(arr, l, h - 1, currentNode);
+
+    func(root->lc, arr, l, k);
+    func(root->rc, arr, k + 1, h - 1);
+}
+
+void printlevelwise(bstnode* root){
+    enque(q, root);
+    enque(q, NULL);
+
+    while(q.f != -1){
+        bstnode* temp = deque(q);
+
+        if(temp != NULL){
+            cout << temp->data << " ";
+            if(temp->lc) enque(q, temp->lc);
+            if(temp->rc) enque(q, temp->rc);
+        }
+        else{
+            cout << endl;
+            if(q.f == -1) return;
+            enque(q, NULL);
+        }
+    }
+}
+
+int main(){
+    int arr[100];
+    int n = 0;
+    int t;
+
+    while(cin >> t && t != -1){
+        arr[n] = t;
+        n++;
+    }
+
+    func(root, arr, 0, n - 1);
+    printlevelwise(root);
+
+    return 0;
+}
