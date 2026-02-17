@@ -1,0 +1,105 @@
+/*
+Title: Convert Sorted Doubly Linked List to Balanced Binary Search Tree (Recursive)
+
+Description:
+This program converts a sorted doubly linked list into a balanced Binary Search Tree (BST)
+using a recursive approach. The middle element of the doubly linked list is selected as
+the root node, and the left and right halves recursively form the left and right subtrees.
+Two recursive functions are used: one for constructing the BST and another for traversal.
+Finally, the constructed BST is printed in preorder traversal.
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc;
+    bstnode* rc;
+};
+
+bstnode* root = NULL;
+
+struct dllnode{
+    int data;
+    dllnode* left;
+    dllnode* right;
+};
+
+dllnode* head = NULL;
+
+void create(bstnode*& root, int k){
+    if(root == NULL){
+        root = new bstnode;
+        root->data = k;
+        root->lc = NULL;
+        root->rc = NULL;
+        return;
+    }
+    if(root->data > k) create(root->lc, k);
+    else create(root->rc, k);
+}
+
+void addAtEnd(dllnode*& head, int k){
+    if(head == NULL){
+        head = new dllnode;
+        head->data = k;
+        head->left = NULL;
+        head->right = NULL;
+        return;
+    }
+    dllnode* temp = head;
+    while(temp->right != NULL){
+        temp = temp->right;
+    }
+    temp->right = new dllnode;
+    temp->right->data = k;
+    temp->right->right = NULL;
+    temp->right->left = temp;
+}
+
+void preorder(bstnode* root){
+    if(root == NULL) return;
+    cout << root->data << " ";
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+dllnode* findMiddle(dllnode* head){
+    dllnode* slow = head;
+    dllnode* fast = head;
+    while(fast->right != NULL && fast->right->right != NULL){
+        slow = slow->right;
+        fast = fast->right->right;
+    }
+    return slow;
+}
+
+void func(dllnode* head, bstnode*& root){
+    if(head == NULL) return;
+
+    dllnode* mid = findMiddle(head);
+    create(root, mid->data);
+
+    if(mid->left != NULL){
+        mid->left->right = NULL;
+        func(head, root);
+    }
+
+    if(mid->right != NULL){
+        mid->right->left = NULL;
+        func(mid->right, root);
+    }
+}
+
+int main(){
+    int t;
+    while(cin >> t && t != -1){
+        addAtEnd(head, t);
+    }
+
+    func(head, root);
+    preorder(root);
+
+    return 0;
+}
