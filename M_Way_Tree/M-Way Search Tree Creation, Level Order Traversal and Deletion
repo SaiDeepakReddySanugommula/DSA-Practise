@@ -1,0 +1,200 @@
+/*
+M-Way Search Tree Implementation
+
+What this program does:
+1. Read order m of M-Way Search Tree.
+2. Insert elements until -1 is entered.
+3. Print tree in Level Order.
+4. Delete a key.
+5. Delete another key.
+6. Print tree again.
+
+Reminder to myself:
+- Each node can store maximum (m-1) keys.
+- Each node can have maximum m children.
+*/
+
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+int m;  // Order of the M-Way Search Tree
+
+// Structure of each node in M-Way Search Tree
+struct mstnode {
+    int key[100];        // Stores keys in sorted order
+    mstnode* arr[100];   // Child pointers
+    int cnt = 0;         // Number of keys currently in node
+};
+
+// Simple queue for level order traversal
+struct queue {
+    mstnode* arr[100];
+    int f = -1, r = -1;
+};
+
+// Insert node into queue
+void enque(queue& q, mstnode* root) {
+    if (q.r == -1) {   // If queue is empty
+        q.r = 0;
+        q.f = 0;
+    } else {
+        q.r++;
+    }
+    q.arr[q.r] = root;
+}
+
+// Remove node from queue
+mstnode* deque(queue& q) {
+    mstnode* temp = q.arr[q.f];
+
+    if (q.r == q.f) {   // Only one element left
+        q.r = -1;
+        q.f = -1;
+    } else {
+        q.f++;
+    }
+    return temp;
+}
+
+// Function to insert a key into M-Way Search Tree
+void create(mstnode*& root, int t) {
+
+    // If tree is empty, create first node
+    if (root == NULL) {
+        root = new mstnode;
+        root->key[0] = t;
+        root->cnt = 1;
+        return;
+    }
+
+    // If node has space (less than m-1 keys), insert here
+    if (root->cnt < m - 1) {
+        root->key[root->cnt] = t;
+        root->cnt++;
+
+        // Always keep keys sorted
+        sort(root->key, root->key + root->cnt);
+        return;
+    }
+
+    // If node is full, decide correct child to go
+    int i = 0;
+    while (i < m - 1 && root->key[i] < t) {
+        i++;
+    }
+
+    // Recursive call to child
+    create(root->arr[i], t);
+}
+
+mstnode* root = NULL;
+
+// Level Order Traversal (Print tree level by level)
+void levelorder(mstnode* root) {
+
+    queue q;
+    enque(q, root);
+    enque(q, NULL);  // Marker for new level
+
+    while (q.r != -1) {
+
+        mstnode* temp = deque(q);
+
+        if (temp != NULL) {
+
+            // Print all keys in current node
+            for (int i = 0; i < temp->cnt; i++) {
+                cout << temp->key[i] << " ";
+
+                // Enqueue left child of each key
+                if (temp->arr[i])
+                    enque(q, temp->arr[i]);
+            }
+
+            // Enqueue rightmost child
+            if (temp->arr[temp->cnt])
+                enque(q, temp->arr[temp->cnt]);
+        }
+
+        else {
+            // End of one level
+            cout << "\n";
+
+            if (q.r == -1)
+                return;
+
+            enque(q, NULL);  // Mark next level
+        }
+    }
+}
+
+// Delete a key from M-Way Search Tree
+void deletee(mstnode* root, int k) {
+
+    for (int i = 0; i < root->cnt; i++) {
+
+        // If key found in current node
+        if (root->key[i] == k) {
+
+            // Case 1: Replace with inorder successor (right subtree smallest)
+            for (int j = i + 1; j < root->cnt + 1; j++) {
+                if (root->arr[j]) {
+                    root->key[i] = root->arr[j]->key[0];
+                    sort(root->key, root->key + root->cnt);
+                    deletee(root->arr[j], root->arr[j]->key[0]);
+                    return;
+                }
+            }
+
+            // Case 2: Replace with inorder predecessor (left subtree largest)
+            for (int j = i; j >= 0; j--) {
+                if (root->arr[j]) {
+                    root->key[i] = root->arr[j]->key[root->cnt - 1];
+                    sort(root->key, root->key + root->cnt);
+                    deletee(root->arr[j], root->arr[j]->key[root->cnt - 1]);
+                    return;
+                }
+            }
+
+            // Case 3: Leaf node → just remove key
+            for (int j = i; j < root->cnt - 1; j++) {
+                root->key[j] = root->key[j + 1];
+            }
+            root->cnt--;
+            return;
+        }
+
+        // If key is smaller, go to correct child
+        if (root->key[i] > k) {
+            deletee(root->arr[i], k);
+            return;
+        }
+    }
+}
+
+int main() {
+
+    cin >> m;   // Read order of tree
+
+    int t;
+
+    // Insert elements until -1
+    while (cin >> t && t != -1) {
+        create(root, t);
+    }
+
+    // Print initial tree
+    levelorder(root);
+
+    // First deletion
+    cin >> t;
+    deletee(root, t);
+
+    // Second deletion
+    cin >> t;
+    deletee(root, t);
+
+    // Print tree after deletions
+    levelorder(root);
+}
