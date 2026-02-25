@@ -1,0 +1,95 @@
+/*
+Problem:
+Convert a Binary Tree to a Binary Search Tree (BST)
+by swapping only node values while maintaining
+the same tree structure.
+
+Restrictions:
+- No storing inorder traversal in array
+- No vector or list usage
+- Only recursion allowed
+- Tree structure must remain unchanged
+*/
+
+#include <iostream>
+#include <climits>
+using namespace std;
+
+struct bstnode {
+    int data;
+    bstnode *lc, *rc;
+};
+
+// Create tree using preorder input (0 means NULL)
+void create(bstnode*& root) {
+    int n;
+    cin >> n;
+
+    if (n == 0) 
+        return;
+
+    root = new bstnode;
+    root->data = n;
+    root->lc = NULL;
+    root->rc = NULL;
+
+    create(root->lc);
+    create(root->rc);
+}
+
+// Find next minimum node greater than prevMin
+void findNextMin(bstnode* curr, int prevMin, bstnode*& minNode) {
+    if (curr == NULL) 
+        return;
+
+    if (curr->data > prevMin) {
+        if (minNode == NULL || curr->data < minNode->data) {
+            minNode = curr;
+        }
+    }
+
+    findNextMin(curr->lc, prevMin, minNode);
+    findNextMin(curr->rc, prevMin, minNode);
+}
+
+// Convert Binary Tree to BST using inorder traversal
+void convertToBST(bstnode* curr, bstnode* root, int& lastVal) {
+    if (curr == NULL) 
+        return;
+
+    convertToBST(curr->lc, root, lastVal);
+
+    bstnode* nextMinNode = NULL;
+    findNextMin(root, lastVal, nextMinNode);
+
+    if (nextMinNode != NULL) {
+        swap(curr->data, nextMinNode->data);
+        lastVal = curr->data;
+    }
+
+    convertToBST(curr->rc, root, lastVal);
+}
+
+// Preorder traversal
+void preorder(bstnode* root) {
+    if (root == NULL) 
+        return;
+
+    cout << root->data << " ";
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+int main() {
+    bstnode* root = NULL;
+
+    create(root);
+
+    int lastVal = INT_MIN;
+
+    convertToBST(root, root, lastVal);
+
+    preorder(root);
+
+    return 0;
+}
