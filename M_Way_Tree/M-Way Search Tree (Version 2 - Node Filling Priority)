@@ -1,0 +1,114 @@
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+/**
+ * M-Way Search Tree (Version 2)
+ * Logic: Fill the current node completely (up to m-1 keys) before 
+ * creating or descending into child nodes.
+ */
+
+int m; // The order of the tree
+
+struct mstnode {
+    int key[100];
+    mstnode* arr[100] = {NULL}; // Initialize child pointers to NULL
+    int cnt = 0;                // Current number of keys in this node
+};
+
+// Simple Queue implementation for Level-Order Traversal
+struct queue {
+    mstnode* arr[100];
+    int f = -1, r = -1;
+};
+
+void enque(queue& q, mstnode* node) {
+    if (q.r == -1) {
+        q.r = 0, q.f = 0;
+    } else {
+        q.r++;
+    }
+    q.arr[q.r] = node;
+}
+
+mstnode* deque(queue& q) {
+    mstnode* temp = q.arr[q.f];
+    if (q.r == q.f) {
+        q.r = -1; q.f = -1;
+    } else {
+        q.f++;
+    }
+    return temp;
+}
+
+// Recursive function to insert keys following "fill nodes first" logic
+void create(mstnode* &root, int t) {
+    // Case 1: Node doesn't exist, create it and add the first key
+    if (root == NULL) {
+        root = new mstnode;
+        root->key[0] = t;
+        root->cnt = 1;
+        return;
+    };
+
+    // Case 2: Node has space (less than m-1 keys), insert and sort
+    if (root->cnt < m - 1) {
+        root->key[root->cnt] = t;
+        root->cnt++;
+        sort(root->key, root->key + root->cnt);
+        return;
+    } 
+    // Case 3: Node is full, find the correct child pointer to follow
+    else {
+        int i = 0;
+        while (i < m - 1 && root->key[i] < t) {
+            i++;
+        }
+        create(root->arr[i], t);
+    }
+}
+
+// Level-order traversal using a NULL delimiter to handle line breaks per level
+void levelorder(mstnode* root) {
+    if (!root) return;
+
+    queue q;
+    enque(q, root);
+    enque(q, NULL); // Level delimiter
+
+    while (q.r != -1) {
+        mstnode* temp = deque(q);
+
+        if (temp != NULL) {
+            // Print all keys in the current node
+            for (int i = 0; i < temp->cnt; i++) {
+                cout << temp->key[i] << " ";
+                // Add existing children to queue
+                if (temp->arr[i]) enque(q, temp->arr[i]);
+            }
+            // Check the last pointer (rightmost child)
+            if (temp->arr[temp->cnt]) enque(q, temp->arr[temp->cnt]);
+        } else {
+            // Reached end of a level
+            cout << "/\n";
+            if (q.r == -1) return; // Queue empty, stop
+            enque(q, NULL);        // Add delimiter for the next level
+        }
+    }
+}
+
+int main() {
+    // Input format: first value is m, following values are keys, 0 to terminate
+    if (!(cin >> m)) return 0;
+
+    mstnode* root = NULL;
+    int t;
+    while (cin >> t && t != 0) {
+        create(root, t);
+    }
+
+    levelorder(root);
+
+    return 0;
+}
