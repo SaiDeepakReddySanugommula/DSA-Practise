@@ -1,0 +1,122 @@
+/*
+Problem:
+Create a Weighted Binary Tree using the given algorithm.
+
+Steps:
+1. Take input weights (each weight is a leaf node).
+2. Every time pick two minimum nodes.
+3. Combine them into a new node (sum of both).
+4. First minimum becomes left child, second minimum becomes right child.
+5. Insert new node back into list and repeat.
+6. Finally print tree in Postorder (LRD).
+*/
+
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+// Basic tree node structure
+struct bstnode{
+    int data;              // stores weight or sum
+    bstnode* rc,*lc;      // right child and left child
+};
+
+bstnode* root=NULL;      // global root (not heavily used, but kept)
+
+// Function to create a single node with value k
+void create(bstnode* &root,int k){
+    root=new bstnode;     // allocate memory
+    root->data=k;         // assign value
+    root->lc=root->rc=NULL;  // initially no children
+}
+
+// Function to combine two nodes into a new parent node
+void func(bstnode* &root, bstnode* lcnode,bstnode* rcnode){
+    // create new node with sum of two minimum nodes
+    create(root,lcnode->data+rcnode->data);
+
+    // first minimum always left child
+    root->lc=lcnode;
+
+    // second minimum always right child
+    root->rc=rcnode;
+}
+
+// Selection sort for sorting array of tree node pointers
+// Sorting based on node->data
+void selectionSortTreeNodes(bstnode* arr[],int l,int n){
+    for(int i=l;i<n-1;i++){
+        int minIndex=i;
+
+        // find minimum node in remaining array
+        for(int j=i;j<n;j++){
+            if(arr[j]->data<arr[minIndex]->data)
+                minIndex=j;
+        }
+
+        // swap smallest to correct position
+        swap(arr[i],arr[minIndex]);
+    }
+}
+
+// Postorder traversal (Left Right Data)
+void LRD(bstnode *root){
+    if(root==NULL)return;
+
+    LRD(root->lc);   // visit left
+    LRD(root->rc);   // visit right
+    cout<<root->data<<" ";  // print root
+}
+
+int main(){
+
+    int arr[50];
+    int n=0,t;
+
+    // Input weights until -1
+    while(cin>>t && t!=-1){
+        arr[n]=t;
+        n++;
+    }
+
+    // Sort initial weights
+    sort(arr,arr+n);
+
+    // Create array of tree node pointers
+    bstnode* A[n];
+
+    // Each weight becomes individual leaf node
+    for(int i=0;i<n;i++){
+        create(A[i],arr[i]);
+    }
+
+    // Sort nodes initially
+    selectionSortTreeNodes(A,0,n);
+
+    int i=0;
+
+    // Repeat combining two minimum nodes
+    while(i<n-1){
+
+        bstnode* temp=NULL;
+
+        // combine A[i] and A[i+1]
+        func(temp,A[i],A[i+1]);
+
+        i++;            // move forward
+
+        // replace second minimum with new combined node
+        A[i]=temp;
+
+        // sort remaining nodes again
+        selectionSortTreeNodes(A,i,n);
+    }
+
+    // final root will be last position
+    bstnode* finalroot=A[n-1];
+
+    // print postorder traversal
+    LRD(finalroot);
+
+    return 0;
+}
