@@ -1,0 +1,108 @@
+#include <iostream>
+using namespace std;
+
+/*
+    M-Way Search Tree (Version 1)
+
+    Rules:
+    - Each node can store maximum (m-1) keys.
+    - Each node has m child pointers.
+    - Keys inside node are stored in sorted fashion
+      by checking positions one by one.
+    - If position empty (key[i] == 0), insert there.
+    - If key smaller, go to left child of that index.
+    - If index reaches m-1, go to last child.
+*/
+
+int m;
+
+struct mstnode {
+	int key[100];      // stores keys (max m-1 used)
+	mstnode* arr[100]; // child pointers (max m used)
+	int cnt=0;         // number of keys currently present
+};
+
+mstnode* root=NULL;
+
+/*
+    create function inserts key k into tree.
+
+    i -> index inside node where comparison starts.
+*/
+void create(mstnode* &root,int i,int k) {
+
+    // if node doesn't exist, create new node
+	if(root==NULL) {
+		root=new mstnode;
+
+        // initialize children to NULL
+        for(int j=0;j<100;j++){
+            root->arr[j]=NULL;
+            root->key[j]=0;
+        }
+
+		root->cnt = 0;
+
+        // insert first key
+		root->key[0]=k;
+		root->cnt++;
+		return;
+	}
+
+    // if all key positions checked, go to last child
+	if(i==m-1){
+	    create(root->arr[m-1],0,k);
+	    return;
+	}
+
+    // if current key position empty → insert here
+	if(root->key[i]==0) {
+		root->key[i]=k;
+		root->cnt++;
+	}
+
+    // if current key greater than k → go to left child
+	else if(root->key[i]>k)
+        create(root->arr[i],0,k);
+
+    // otherwise check next key position
+	else
+        create(root,i+1,k);
+}
+
+/*
+    Inorder traversal of M-Way Search Tree.
+
+    For each key:
+        inorder(child[i])
+        print key[i]
+    Finally:
+        inorder(child[cnt])
+*/
+void inorder(mstnode*T) {
+	if(T==NULL)return;
+
+	for(int i=0; i<T->cnt; i++) {
+		inorder(T->arr[i]);
+		cout<<T->key[i]<<" ";
+	}
+	inorder(T->arr[T->cnt]);
+}
+
+int main() {
+
+    // input m value
+	cin>>m;
+
+	int t;
+
+    // insert values until 0
+	while(cin>>t&&t!=0) {
+		create(root,0,t);
+	}
+
+    // print sorted sequence
+	inorder(root);
+
+	return 0;
+}
