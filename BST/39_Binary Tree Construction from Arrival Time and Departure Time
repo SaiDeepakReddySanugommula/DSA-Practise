@@ -1,0 +1,108 @@
+#include <iostream>
+using namespace std;
+
+/*
+    Constructing Binary Tree from AT and DT.
+
+    Idea:
+    - Store node value at arr[AT-1] and arr[DT-1].
+    - So every value appears exactly twice.
+    - While constructing:
+        If current value != previous value → create new node.
+        If current value == previous → it means subtree finished.
+    - Use recursive pattern to build lc and rc.
+    - Finally print RLD traversal.
+*/
+
+struct bstnode {
+	int data;
+	bstnode* lc,*rc;
+};
+
+bstnode* root=NULL;
+
+// array that stores node values based on AT and DT
+int arr[100];
+
+void create(bstnode* &root,int arr[],int n,int &i,int prev) {
+
+    // base case: if index crosses maximum used DT
+    if(i>=n)return;
+
+    // if current array value is different from previous
+    // create a new node
+    if(prev!=arr[i]){
+        root=new bstnode ;
+        root->data=arr[i++];   // assign value and move index
+        root->lc=root->rc=NULL;
+        prev=root->data;      // update previous value
+    }
+    else{
+        // if value same as previous,
+        // it means we reached closing time of that node
+        // so return to previous recursive call
+        return; 
+        // we have to return both lc and rc calls but as we cannot do so 
+        // we call only rc in such case.
+    }
+
+    // if next value equals prev,
+    // means right subtree case (duplicate closing)
+    if(arr[i]==prev){
+        create(root->rc,arr,n,i,prev);
+        i++; // skip duplicate occurrence
+    }
+    else{
+        // otherwise first construct left subtree
+        create(root->lc,arr,n,i,prev);
+
+        // then construct right subtree
+        create(root->rc,arr,n,i,prev);
+
+        i++; // remove extra numbers from array (closing time)
+    }
+}
+
+// RLD Traversal: Right → Left → Data
+void RLD(bstnode* root) {
+	if(root==NULL)return;
+
+	RLD(root->rc);
+	RLD(root->lc);
+	cout<<root->data<<" ";
+}
+
+int main() {
+
+	int value,i1,i2;
+	int n=0;
+
+	/*
+	    Input format:
+	    value AT DT
+	    Stop when value = 0
+	*/
+	while(cin>>value&&cin>>i1&&cin>>i2&&value!=0) {
+
+		// keep track of maximum DT to know array size limit
+		n=max(n,i2);
+
+		// store value at AT-1 and DT-1
+		arr[i1-1]=value;
+		arr[i2-1]=value;
+	}
+
+	// index pointer for traversal
+	int i=0;
+
+	// previous value initially 0
+	int prev=0;
+
+	// construct tree
+	create(root,arr,n,i,prev);
+
+    // print RLD traversal to verify tree
+    RLD(root);
+
+	return 0;
+}
