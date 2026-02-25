@@ -1,0 +1,78 @@
+/*
+Problem:
+Construct a Binary Tree using serialized preorder input (0 represents NULL).
+Then compute and print Arrival Time (AT) and Departure Time (DT) 
+for each node.
+
+Output format:
+NodeValue AT DT
+Printed in preorder.
+*/
+
+#include <iostream>
+using namespace std;
+
+// Structure of tree node
+struct bstnode{
+    int data;          // node value
+    bstnode* lc;       // left child
+    bstnode* rc;       // right child
+    int AT = -1;       // arrival time
+    int DT = -1;       // departure time
+};
+
+bstnode* root = NULL;
+
+// Create Binary Tree using serialized preorder input
+void create(bstnode*& root){
+    int t;
+    cin >> t;
+
+    if(t == 0) 
+        return;
+
+    root = new bstnode;
+    root->data = t;
+    root->lc = root->rc = NULL;
+
+    create(root->lc);
+    create(root->rc);
+}
+
+// DFS traversal to assign Arrival and Departure Times
+void DLRD(bstnode* root, int &i){
+    if(root == NULL) 
+        return;
+
+    root->AT = i++;        // arrival time
+
+    DLRD(root->lc, i);
+    DLRD(root->rc, i);
+
+    root->DT = i++;        // departure time
+}
+
+// Preorder printing: Node Value, AT, DT
+void preorder(bstnode* root){
+    if(root == NULL) 
+        return;
+
+    cout << root->data << " "
+         << root->AT << " "
+         << root->DT << endl;
+
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+int main(){
+
+    create(root);
+
+    int i = 1;      // global timer starts from 1
+    DLRD(root, i);
+
+    preorder(root);
+
+    return 0;
+}
