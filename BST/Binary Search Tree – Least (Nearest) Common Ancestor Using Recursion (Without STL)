@@ -1,0 +1,95 @@
+// Title: BST – Least (Nearest) Common Ancestor
+// Description: Build BST from input (-1 terminated) and find LCA
+// for given node pairs using path tracking with stacks (no STL).
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode *lc,*rc;
+};
+
+// simple stack to store path from node to root
+struct stack{
+    int top=-1;
+    int arr[50];
+};
+
+void push(stack &s,int k){
+    if(s.top>=49)return;
+    s.arr[++s.top]=k;
+}  
+
+int pop(stack &s){
+    if(s.top==-1)return -1;
+    return s.arr[s.top--];
+}
+
+bstnode* root=NULL;
+
+// normal BST insertion using recursion
+void create(bstnode*&root,int k){
+    if(root==NULL){
+        root=new bstnode;
+        root->data=k;
+        root->lc=NULL;
+        root->rc=NULL;
+        return;
+    }
+    if(root->data>k) create(root->lc,k);
+    else create(root->rc,k);
+}
+
+// store path from given node up to root (backtracking push)
+void search(stack &s,int k,bstnode*root){
+    if(root==NULL)return;
+
+    if(root->data>k){
+        search(s,k,root->lc);
+        push(s,root->data);  // push while returning
+    }
+    else if(root->data<k){
+        search(s,k,root->rc);
+        push(s,root->data);
+    }
+    else{
+        push(s,root->data);  // push node itself
+        return;
+    }
+}
+
+int main(){
+    int t;
+
+    // create BST
+    while(cin>>t && t!=-1){
+        create(root,t);
+    }
+
+    int x,y;
+
+    // process pairs until -1 -1
+    while(cin>>x>>y){
+        if(x==-1 && y==-1)break;
+
+        stack s1,s2;
+
+        // get path for both nodes
+        search(s1,x,root);
+        search(s2,y,root);
+
+        int lca=-1;
+
+        // compare from root side (top of stack)
+        while(s1.top!=-1 && s2.top!=-1 &&
+              s1.arr[s1.top]==s2.arr[s2.top]){
+            lca=pop(s1);
+            pop(s2);
+        }
+
+        cout<<lca<<endl;
+    }
+
+    return 0;
+}
