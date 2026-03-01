@@ -1,0 +1,99 @@
+// Title: Binary Tree Sort (Delete-Min Approach)
+// Description: Construct binary tree using preorder input (0 for NULL).
+// Repeatedly find minimum node, print it, and delete it from same tree.
+// No new tree is created.
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc,*rc;
+};
+
+bstnode* root=NULL;
+
+// build tree using preorder (0 means NULL)
+void create(bstnode*&root){
+    int k;
+    cin>>k;
+
+    if(k==0){
+        root=NULL;
+        return;
+    }
+
+    root=new bstnode;
+    root->data=k;
+    root->lc=NULL;
+    root->rc=NULL;
+
+    create(root->lc);
+    create(root->rc);
+}
+
+// find minimum node by traversing entire tree
+// res keeps track of current minimum
+bstnode* &minn(bstnode* &root,bstnode*&res){
+
+    if(res->data > root->data)
+        res=root;
+
+    if(root->lc)
+        minn(root->lc,res);
+
+    if(root->rc)
+        minn(root->rc,res);
+
+    return res;
+}
+
+// delete given node by replacing it with any leaf
+// here choosing extreme left-most leaf
+void deletee(bstnode* &p){
+
+    bstnode* parent=NULL;
+    bstnode* leaf=root;
+
+    // find a leaf node
+    while(leaf->lc!=NULL || leaf->rc!=NULL){
+        parent=leaf;
+
+        if(leaf->lc)
+            leaf=leaf->lc;
+        else
+            leaf=leaf->rc;
+    }
+
+    // replace target node's data with leaf data
+    p->data=leaf->data;
+
+    // remove leaf from tree
+    if(parent==NULL){
+        root=NULL;   // only one node case
+    }
+    else if(parent->lc==leaf){
+        parent->lc=NULL;
+    }
+    else{
+        parent->rc=NULL;
+    }
+}
+
+int main(){
+
+    create(root);
+
+    // keep extracting minimum until tree becomes NULL
+    while(root){
+
+        bstnode* temp1=root;
+        bstnode* &temp=minn(root,temp1);
+
+        cout<<temp->data<<" ";
+
+        deletee(temp);
+    }
+
+    return 0;
+}
