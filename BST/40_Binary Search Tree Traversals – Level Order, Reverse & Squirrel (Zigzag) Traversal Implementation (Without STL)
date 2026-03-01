@@ -1,0 +1,286 @@
+// ==========================================================
+// Title: BST Traversals – Level Order, Reverse, Zigzag, Alternate Level Reversal
+// Description:
+// This program constructs a Binary Search Tree (BST) from user input
+// (terminated by -1) and performs multiple traversals:
+//
+// 1. Normal Level Order Traversal
+// 2. Complete Reverse Level Order
+// 3. Reverse Level Order (Right to Left)
+// 4. Squirrel Traversal (Clockwise Zigzag)
+// 5. Squirrel Traversal (Anti-Clockwise Zigzag)
+// 6. Alternate Odd Level Reversal
+// 7. Alternate Even Level Reversal
+//
+// Implemented using manual stack and queue structures
+// to understand internal working instead of STL.
+//
+// (Comments added for future self-understanding.)
+// ==========================================================
+
+#include <iostream>
+using namespace std;
+
+// ================= BST Node Definition =================
+struct bstnode {
+    int data;          // value stored in node
+    bstnode *lc, *rc;  // left child and right child
+};
+
+// ================= Stack Implementation =================
+struct stack1 {
+    int top = -1;          // top pointer
+    bstnode* arr[100];     // static array for stack
+};
+
+// ================= Queue Implementation =================
+struct queue {
+    int r = -1, f = -1;    // rear and front pointers
+    bstnode* arr[100];     // static array for queue
+};
+
+// ================= Stack Functions =================
+
+// Push node into stack
+void push(stack1 &s, bstnode* k) {
+    if (s.top >= 99) return;   // overflow check
+    s.arr[++s.top] = k;
+}
+
+// Pop node from stack
+bstnode* pop(stack1 &s) {
+    return s.arr[s.top--];
+}
+
+// ================= Queue Functions =================
+
+// Enqueue node into queue
+void enque(queue &q, bstnode* root) {
+    if (q.r == -1) {
+        q.r = 0;
+        q.f = 0;
+    } else {
+        q.r++;
+    }
+    q.arr[q.r] = root;
+}
+
+// Dequeue node from queue
+bstnode* deque(queue &q) {
+    bstnode* t = q.arr[q.f];
+
+    if (q.f == q.r) {
+        // if last element removed, reset queue
+        q.f = -1;
+        q.r = -1;
+    } else {
+        q.f++;
+    }
+
+    return t;
+}
+
+// ================= BST Creation =================
+
+// Insert element into BST recursively
+void create(bstnode* &root, int k) {
+
+    // If tree empty, create root
+    if (root == NULL) {
+        root = new bstnode;
+        root->data = k;
+        root->lc = NULL;
+        root->rc = NULL;
+        return;
+    }
+
+    // BST property
+    if (root->data > k)
+        create(root->lc, k);   // insert in left subtree
+    else
+        create(root->rc, k);   // insert in right subtree
+}
+
+// ================= Squirrel Clockwise (Zigzag) =================
+// Level 1: L->R
+// Level 2: R->L
+// Level 3: L->R
+// and so on...
+void squirrelClockwise(bstnode* root) {
+
+    if (!root) return;
+
+    stack1 s1, s2;
+
+    push(s1, root);   // start with root in stack1
+
+    while (s1.top != -1 || s2.top != -1) {
+
+        // Process stack1 (L->R)
+        while (s1.top != -1) {
+            bstnode* temp = pop(s1);
+            cout << temp->data << " ";
+
+            // push children into stack2
+            if (temp->lc) push(s2, temp->lc);
+            if (temp->rc) push(s2, temp->rc);
+        }
+
+        // Process stack2 (R->L)
+        while (s2.top != -1) {
+            bstnode* temp = pop(s2);
+            cout << temp->data << " ";
+
+            // push children into stack1 in reverse order
+            if (temp->rc) push(s1, temp->rc);
+            if (temp->lc) push(s1, temp->lc);
+        }
+    }
+}
+
+// ================= Squirrel Anti-Clockwise =================
+// Level 1: R->L
+// Level 2: L->R
+// Level 3: R->L
+void squirrelAntiClockwise(bstnode* root) {
+
+    if (!root) return;
+
+    stack1 s1, s2;
+
+    push(s1, root);
+
+    while (s1.top != -1 || s2.top != -1) {
+
+        while (s1.top != -1) {
+            bstnode* temp = pop(s1);
+            cout << temp->data << " ";
+
+            // reverse push order
+            if (temp->rc) push(s2, temp->rc);
+            if (temp->lc) push(s2, temp->lc);
+        }
+
+        while (s2.top != -1) {
+            bstnode* temp = pop(s2);
+            cout << temp->data << " ";
+
+            if (temp->lc) push(s1, temp->lc);
+            if (temp->rc) push(s1, temp->rc);
+        }
+    }
+}
+
+// ================= Alternate Level Reversal =================
+// reverseOdd = true  → reverse odd levels
+// reverseOdd = false → reverse even levels
+void alternateLevel(bstnode* root, bool reverseOdd) {
+
+    if (!root) return;
+
+    queue q;
+    enque(q, root);
+
+    int level = 1;  // start counting levels from 1
+
+    while (q.f != -1) {
+
+        int size = q.r - q.f + 1;  // number of nodes in current level
+        stack1 st;                 // temporary stack for reversing
+
+        for (int i = 0; i < size; i++) {
+
+            bstnode* temp = deque(q);
+
+            // Check if current level should be reversed
+            if ((reverseOdd && level % 2 == 1) ||
+                (!reverseOdd && level % 2 == 0))
+                push(st, temp);      // store for reversing
+            else
+                cout << temp->data << " ";
+
+            // Normal level order child insertion
+            if (temp->lc) enque(q, temp->lc);
+            if (temp->rc) enque(q, temp->rc);
+        }
+
+        // Print reversed nodes
+        while (st.top != -1)
+            cout << pop(st)->data << " ";
+
+        level++;  // move to next level
+    }
+}
+
+// ================= Main Function =================
+int main() {
+
+    bstnode* root = NULL;
+    int t;
+
+    // Input until -1
+    while (cin >> t && t != -1)
+        create(root, t);
+
+    // ---------- 1. Normal Level Order ----------
+    queue q1;
+    enque(q1, root);
+
+    while (q1.f != -1) {
+        bstnode* temp = deque(q1);
+        cout << temp->data << " ";
+        if (temp->lc) enque(q1, temp->lc);
+        if (temp->rc) enque(q1, temp->rc);
+    }
+    cout << endl;
+
+    // ---------- 2. Complete Reverse Level Order ----------
+    queue q2;
+    stack1 st2;
+    enque(q2, root);
+
+    while (q2.f != -1) {
+        bstnode* temp = deque(q2);
+        push(st2, temp);
+        if (temp->lc) enque(q2, temp->lc);
+        if (temp->rc) enque(q2, temp->rc);
+    }
+
+    while (st2.top != -1)
+        cout << pop(st2)->data << " ";
+    cout << endl;
+
+    // ---------- 3. Reverse Level Order (Right to Left) ----------
+    queue q3;
+    stack1 st3;
+    enque(q3, root);
+
+    while (q3.f != -1) {
+        bstnode* temp = deque(q3);
+        push(st3, temp);
+        if (temp->rc) enque(q3, temp->rc);
+        if (temp->lc) enque(q3, temp->lc);
+    }
+
+    while (st3.top != -1)
+        cout << pop(st3)->data << " ";
+    cout << endl;
+
+    // ---------- 4. Squirrel Clockwise ----------
+    squirrelClockwise(root);
+    cout << endl;
+
+    // ---------- 5. Squirrel Anti-Clockwise ----------
+    squirrelAntiClockwise(root);
+    cout << endl;
+
+    // ---------- 6. Alternate Odd Level Reversal ----------
+    alternateLevel(root, true);
+    cout << endl;
+
+    // ---------- 7. Alternate Even Level Reversal ----------
+    alternateLevel(root, false);
+    cout << endl;
+
+    return 0;
+}
