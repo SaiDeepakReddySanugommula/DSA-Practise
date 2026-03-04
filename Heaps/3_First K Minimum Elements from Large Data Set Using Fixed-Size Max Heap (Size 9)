@@ -1,0 +1,71 @@
+#include <iostream>
+using namespace std;
+
+// Maintain max heap property
+void heapify(int arr[], int i, int n) {
+    if (i >= n) return;
+
+    int largest = i;
+    int left = 2*i + 1;
+    int right = 2*i + 2;
+
+    if (left < n && arr[left] > arr[largest])
+        largest = left;
+
+    if (right < n && arr[right] > arr[largest])
+        largest = right;
+
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+        heapify(arr, largest, n);
+    }
+}
+
+// Build max heap from array
+void buildMaxHeap(int arr[], int n) {
+    for (int i = n/2 - 1; i >= 0; i--) {
+        heapify(arr, i, n);
+    }
+}
+
+// Remove elements and print first k minimums
+void extractMinK(int arr[], int n, int &index, int k) {
+    if (n == 0) return;
+
+    int rootValue = arr[0];
+    arr[0] = arr[n-1];
+    n--;
+
+    heapify(arr, 0, n);
+    extractMinK(arr, n, index, k);
+
+    if (index < k)
+        cout << rootValue << " ";
+
+    index++;
+}
+
+int main() {
+    int heapArr[9];
+    int count = 0, input;
+
+    // Read first 9 elements
+    while (count < 9 && cin >> input) {
+        heapArr[count++] = input;
+    }
+
+    buildMaxHeap(heapArr, 9);
+
+    // Process remaining elements
+    while (cin >> input && input != -1) {
+        if (input < heapArr[0]) {
+            heapArr[0] = input;
+            buildMaxHeap(heapArr, 9);
+        }
+    }
+
+    int index = 0;
+    extractMinK(heapArr, 9, index, 5);
+
+    return 0;
+}
