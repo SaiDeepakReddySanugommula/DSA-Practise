@@ -1,0 +1,149 @@
+#include <iostream>
+using namespace std;
+
+struct TreeNode {
+    int data;
+    TreeNode* left;
+    TreeNode* right;
+};
+
+// Queue to store sorted values from BST
+struct ValueQueue {
+    int arr[100];
+    int front = -1, rear = -1;
+} valueQueue;
+
+// Queue to build heap level order
+struct TreeQueue {
+    TreeNode* arr[100];
+    int front = -1, rear = -1;
+} treeQueue;
+
+
+// -------- Tree Node Queue --------
+void enqueueNode(TreeQueue& q, TreeNode* node) {
+    if (q.rear == -1)
+        q.front = q.rear = 0;
+    else
+        q.rear++;
+    q.arr[q.rear] = node;
+}
+
+TreeNode* dequeueNode(TreeQueue& q) {
+    TreeNode* temp = q.arr[q.front];
+    if (q.front == q.rear)
+        q.front = q.rear = -1;
+    else
+        q.front++;
+    return temp;
+}
+
+
+// -------- Integer Queue --------
+void enqueueValue(ValueQueue& q, int value) {
+    if (q.rear == -1)
+        q.front = q.rear = 0;
+    else
+        q.rear++;
+    q.arr[q.rear] = value;
+}
+
+int dequeueValue(ValueQueue& q) {
+    if (q.rear == -1) return -1;
+
+    int temp = q.arr[q.front];
+    if (q.front == q.rear)
+        q.front = q.rear = -1;
+    else
+        q.front++;
+    return temp;
+}
+
+
+// BST and Heap roots
+TreeNode* bstRoot = NULL;
+TreeNode* heapRoot = NULL;
+
+
+// Insert value into BST
+void insertBST(TreeNode*& root, int value) {
+    if (root == NULL) {
+        root = new TreeNode;
+        root->data = value;
+        root->left = root->right = NULL;
+        return;
+    }
+
+    if (value > root->data)
+        insertBST(root->right, value);
+    else
+        insertBST(root->left, value);
+}
+
+
+// Store BST elements in sorted order
+void inorderStore(TreeNode* root) {
+    if (root == NULL) return;
+
+    inorderStore(root->left);
+    enqueueValue(valueQueue, root->data);
+    inorderStore(root->right);
+}
+
+
+// Build complete min heap
+void buildHeap(TreeNode*& heapRoot) {
+
+    enqueueNode(treeQueue, heapRoot);
+
+    while (treeQueue.rear != -1) {
+
+        TreeNode* current = dequeueNode(treeQueue);
+
+        int leftVal = dequeueValue(valueQueue);
+        if (leftVal == -1) return;
+        insertBST(current->left, leftVal);
+
+        int rightVal = dequeueValue(valueQueue);
+        if (rightVal == -1) return;
+        insertBST(current->right, rightVal);
+
+        enqueueNode(treeQueue, current->left);
+        enqueueNode(treeQueue, current->right);
+    }
+}
+
+
+// Preorder traversal
+void preorderPrint(TreeNode* root) {
+    if (root == NULL) return;
+
+    cout << root->data << " ";
+    preorderPrint(root->left);
+    preorderPrint(root->right);
+}
+
+
+int main() {
+
+    int input;
+
+    // Create BST
+    while (cin >> input && input != -1) {
+        insertBST(bstRoot, input);
+    }
+
+    // Store values in sorted order
+    inorderStore(bstRoot);
+
+    // First value becomes heap root
+    insertBST(heapRoot, dequeueValue(valueQueue));
+
+    // Build heap
+    buildHeap(heapRoot);
+
+    // Print heap preorder
+    preorderPrint(heapRoot);
+
+    return 0;
+}
