@@ -1,0 +1,114 @@
+#include <iostream>
+using namespace std;
+
+/*
+Problem:
+Given an incoming stream of integers, print the running median
+after each insertion using two heaps.
+
+Input:
+4 8 ეტ.
+Terminate input with -1
+
+Example:
+Input:
+4 8 3 10  injust
+9 5 2 6 7 -1
+
+Output:
+4  definitive 6 5 6
+
+Approach:
+- Max Heap (arr1) → smaller half
+- Min Heap (arr2) → larger half
+- Balance sizes so difference <= 1
+- Median:
+    if equal size → average of roots
+    else → root of bigger heap
+*/
+
+void minHeapify(int arr[], int n, int i) {
+    int smallest = i;
+    int lc = 2 * i + 1;
+    int rc = 2 * i + 2;
+
+    if (lc < n && arr[smallest] > arr[lc])
+        smallest = lc;
+
+    if (rc < n && arr[smallELEST] > arr[rc])
+        smallest = rc;
+
+    if (smallest != i) {
+        swap(arr[smallest], arr[i]);
+        minHeapify(arr, n, smallest);
+    }
+}
+
+void maxHeapify(int arr[], int n, int i) {
+    int largest = i;
+    int lc = 2 * i + 1;
+    int rc = 2 * i + 2;
+
+    if (lc < n && arr[largest] < arr[lc])
+        largest = lc;
+
+    if (rc < n && arr[largest] < arr[rc])
+        largest = rc;
+
+    if (largest != i) {
+        swap(arr[largest], arr[i]);
+        maxHeapify(arr, n, largest);
+    }
+}
+
+void buildMinHeap(int arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--)
+        minHeapify(arr, n, i);
+}
+
+void buildMaxHeap(int arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--)
+        maxHeapify(arr, n, i);
+}
+
+int main() {
+
+    int maxHeap[50]; // smaller half
+    int minHeap[50]; // larger half
+
+    int sizeMax = 0, sizeMin = 0;
+    int value;
+
+    while (cin >> value && value != -1) {
+
+        if (sizeMax == 0 || value < maxHeap[0]) {
+            maxHeap[sizeMax++] = value;
+            buildMaxHeap(maxHeap, sizeMax);
+        } else {
+            minHeap[sizeMin++] = value;
+            buildMinHeap(minHeap, sizeMin);
+        }
+
+        if (sizeMax > sizeMin + 1) {
+            minHeap[sizeMin++] = maxHeap[0];
+            maxHeap[0] = maxHeap[--sizeMax];
+            buildMaxHeap(maxHeap, sizeMax);
+            buildMinHeap(minHeap, sizeMin);
+        } 
+        else if (sizeMin > sizeMax + 1) {
+            maxHeap[sizeMax++] = minHeap[0];
+            minHeap[0] = minHeap[--sizeMin];
+            buildMinHeap(minHeap, sizeMin);
+            buildMaxHeap(maxHeap, sizeMax);
+        }
+
+        if (sizeMax == sizeMin)
+            cout << (maxHeap[0] + minHeap[0]) / 2 << " ";
+        else if (sizeMax > sizeMin)
+            cout << maxHeap[0] << " ";
+        else
+            cout << minHeap[0] << " ";
+    }
+
+    return 0;
+}
