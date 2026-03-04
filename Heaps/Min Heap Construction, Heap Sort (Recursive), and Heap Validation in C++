@@ -1,0 +1,62 @@
+#include <iostream>
+using namespace std;
+
+// Check whether given array satisfies min-heap property
+bool check(int arr[], int i, int n) {
+    if (2*i + 2 >= n) return true;  // no children → valid
+
+    return (arr[i] < arr[2*i+1] && arr[i] < arr[2*i+2])
+           && check(arr, i+1, n);   // check next node
+}
+
+// Maintain min-heap property by moving element upward if needed
+void heapify(int arr[], int i, int n) {
+    if (i <= 0 || i >= n) return;
+
+    int p = (i - 1) / 2;  // parent index
+
+    if (arr[i] > arr[p]) {
+        heapify(arr, i+1, n);  // move to next index
+    } else {
+        swap(arr[i], arr[p]);  // fix violation
+
+        int y = i;
+        i = p;
+        heapify(arr, i, n);    // fix upwards
+        heapify(arr, y+1, n);  // continue for rest
+    }
+}
+
+// Remove root repeatedly to print sorted order
+void deheapify(int arr[], int n) {
+    if (n == 0) return;
+
+    cout << arr[0] << " ";     // min element
+    arr[0] = arr[n-1];         // replace with last
+    n--;
+
+    heapify(arr, 1, n);        // rebuild heap
+    deheapify(arr, n);
+}
+
+int main() {
+    int arr[50], n = 0, t;
+
+    // first input → build heap
+    while (cin >> t && t != -1) {
+        arr[n++] = t;
+    }
+
+    heapify(arr, 1, n);
+    deheapify(arr, n);
+    cout << endl;
+
+    // second input → check min heap
+    int arr1[50], n1 = 0;
+    while (cin >> t && t != -1) {
+        arr1[n1++] = t;
+    }
+
+    cout << check(arr1, 0, n1);
+    return 0;
+} 
