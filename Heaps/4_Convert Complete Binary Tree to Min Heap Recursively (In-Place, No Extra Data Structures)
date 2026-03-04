@@ -1,0 +1,83 @@
+#include <iostream>
+using namespace std;
+
+/*
+Problem:
+Convert a given complete binary tree into a Min Heap recursively
+in-place (without using arrays or vectors).
+
+Input (serialized preorder, 0 means NULL):
+18 36 12 0 0 2 0 0 27 5 0 0 9 0 0
+
+Expected Preorder Output (after conversion):
+2 12 36 18 5 27 9
+*/
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+};
+
+Node* root = NULL;
+
+// build tree from serialized preorder
+void buildTree(Node*& root) {
+    int value;
+    cin >> value;
+
+    if (value == 0) return;
+
+    root = new Node;
+    root->data = value;
+    root->left = root->right = NULL;
+
+    buildTree(root->left);
+    buildTree(root->right);
+}
+
+// push current node down to maintain min heap property
+void heapifyDown(Node* root) {
+    if (!root) return;
+
+    Node* smallest = root;
+
+    if (root->left && root->left->data < smallest->data)
+        smallest = root->left;
+
+    if (root->right && root->right->data < smallest->data)
+        smallest = root->right;
+
+    if (smallest != root) {
+        swap(root->data, smallest->data);
+        heapifyDown(smallest);
+    }
+}
+
+// convert tree to min heap (bottom-up)
+void convertToMinHeap(Node* root) {
+    if (!root) return;
+
+    convertToMinHeap(root->left);
+    convertToMinHeap(root->right);
+
+    heapifyDown(root);
+}
+
+// preorder traversal
+void printPreorder(Node* root) {
+    if (!root) return;
+
+    cout << root->data << " ";
+    printPreorder(root->left);
+    printPreorder(root->right);
+}
+
+int main() {
+
+    buildTree(root);
+    convertToMinHeap(root);
+    printPreorder(root);
+
+    return 0;
+}
