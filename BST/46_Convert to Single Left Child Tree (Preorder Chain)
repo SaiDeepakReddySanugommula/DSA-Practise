@@ -1,0 +1,113 @@
+/*
+Problem: BT Single Left Child
+
+Create a Binary Tree using serialized preorder input (# represents NULL).
+
+Modify the tree so that:
+1. Every node has only a LEFT child.
+2. If a node has a right child, that right subtree should become the
+   left child of its preorder predecessor.
+3. All right child pointers (rc) must become NULL.
+
+Restrictions:
+- Do not use arrays
+- Traverse the tree only once
+- Do not create another tree
+- Print the final tree as serialized preorder
+
+Example
+
+Input:
+ABC#DE##F##G##HI#JK##L##M#N##
+
+Output:
+ABCDEFGHIJKLMN###############
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    char data;
+    bstnode* lc,*rc;
+};
+
+bstnode* root=NULL;
+char k;
+
+/* create tree using serialized preorder */
+void create(bstnode* &root){
+    cin>>k;
+
+    if(k=='#') return;
+
+    root=new bstnode;
+    root->data=k;
+    root->lc=NULL;
+    root->rc=NULL;
+
+    create(root->lc);
+    create(root->rc);
+}
+
+/* convert tree so every node has only left child */
+void func(bstnode* root){
+
+    while(root!=NULL){
+
+        if(root->lc && root->rc){
+
+            bstnode* temp=root->lc;
+
+            // go to last node of current left chain
+            while(temp->rc==NULL && temp->lc!=NULL){
+                temp=temp->lc;
+            }
+
+            // if right chain exists move to its end
+            while(temp->rc!=NULL){
+                temp=temp->rc;
+            }
+
+            // attach right subtree there
+            temp->rc=root->rc;
+
+            root->rc=NULL;   // remove original right link
+        }
+
+        else if(root->rc && root->lc==NULL){
+
+            // if only right child exists convert it to left
+            root->lc=root->rc;
+            root->rc=NULL;
+        }
+
+        // move in preorder chain
+        root=root->lc;
+    }
+}
+
+/* print serialized preorder */
+void preorder(bstnode* root){
+
+    if(root==NULL){
+        cout<<"#";
+        return;
+    }
+
+    cout<<root->data;
+
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+int main(){
+
+    create(root);
+
+    func(root);
+
+    preorder(root);
+
+    return 0;
+}
