@@ -1,0 +1,216 @@
+#include <iostream>
+using namespace std;
+
+/*
+Problem Statement:
+SSS – Saturday Sunday Specials (22-02-2026)
+
+Construct a general tree using the given serialized preorder input.
+The tree uses the representation:
+    lc  -> first child
+    rc  -> next sibling
+
+Modify the tree such that:
+1. Even values should appear first in the tree.
+2. Odd values should appear later.
+3. Arrangement must follow top-to-bottom and left-to-right order.
+4. If an even value is already in a correct upper position, it should NOT be changed.
+
+Finally print the preorder traversal of the modified tree.
+*/
+
+struct bstnode{
+    int data;
+    bstnode* lc;
+    bstnode* rc;
+};
+
+bstnode* root1=NULL;
+bstnode* root2=NULL;
+
+
+/* ---------------- QUEUE IMPLEMENTATION ---------------- */
+
+struct queue{
+    bstnode* arr[50];
+    int r=-1,f=-1;
+}q1,toChangeEvenTOOddInBottom;
+
+void enque(queue &q,bstnode* node){
+    if(q.r==-1){
+        q.r=0;
+        q.f=0;
+    }
+    else{
+        q.r++;
+    }
+    q.arr[q.r]=node;
+}
+
+bstnode* deque(queue &q){
+    bstnode* temp=q.arr[q.f];
+    
+    if(q.r==q.f){
+        q.r=-1;
+        q.f=-1;
+    }
+    else{
+        q.f++;
+    }
+    
+    return temp;
+}
+
+
+/* ---------------- STACK IMPLEMENTATION ---------------- */
+
+struct stack{
+    int top=-1;
+    bstnode* arr[50];
+}s,removedOddNodes;
+
+void push(stack &s,bstnode* node){
+    if(s.top>=49) return;
+    s.arr[++s.top]=node;
+}
+
+bstnode* pop(stack &s){
+    if(s.top==-1) return NULL;
+    return s.arr[s.top--];
+}
+
+
+/* ---------------- COLLECT EVEN AND ODD NODES ---------------- */
+
+void fillOddNodesIntoQueueAndEvenValuesInStack(bstnode* root){
+
+    queue tempQueue;
+    tempQueue.r=-1;
+    tempQueue.f=-1;
+
+    enque(tempQueue,root);
+
+    while(tempQueue.r!=-1){
+
+        bstnode* temp=deque(tempQueue);
+
+        while(temp){
+
+            if(temp->lc)
+                enque(tempQueue,temp->lc);
+
+            if(temp->data % 2 == 0){
+                push(s,temp);                 // store even nodes
+            }
+            else{
+                enque(q1,temp);               // store odd nodes
+            }
+
+            temp=temp->rc;                    // move to next sibling
+        }
+    }
+}
+
+
+/* ---------------- MODIFY TREE ---------------- */
+
+void modifyTree(queue q, stack s){
+
+    int i=-1;
+
+    while(q.f!=-1 && s.top>i){
+
+        bstnode* oddNode=deque(q);
+
+        bstnode* temp=new bstnode;
+        temp->data=oddNode->data;
+
+        bstnode* evenNode=pop(s);
+
+        oddNode->data=evenNode->data;
+
+        i++;
+
+        enque(toChangeEvenTOOddInBottom,evenNode);
+        push(removedOddNodes,temp);
+    }
+
+    while(removedOddNodes.top!=-1 && toChangeEvenTOOddInBottom.r!=-1){
+
+        swap(
+            pop(removedOddNodes)->data,
+            deque(toChangeEvenTOOddInBottom)->data
+        );
+    }
+}
+
+
+/* ---------------- TREE CREATION ---------------- */
+
+void create(bstnode* &root,int arr[],int &i){
+
+    if(arr[i]==0){
+        i++;
+        return;
+    }
+
+    root=new bstnode;
+
+    root->data=arr[i];
+    i++;
+
+    create(root->lc,arr,i);   // first child
+    create(root->rc,arr,i);   // next sibling
+}
+
+
+/* ---------------- PREORDER TRAVERSAL ---------------- */
+
+void preorder(bstnode* root){
+
+    if(root==NULL)
+        return;
+
+    cout<<root->data<<" ";
+
+    preorder(root->lc);
+    preorder(root->rc);
+}
+
+
+/* ---------------- MAIN FUNCTION ---------------- */
+
+int main(){
+
+    int arr1[]={4,1,5,0,6,0,0,3,9,0,0,2,7,8,0,0,0,0,0};
+
+    int arr2[]={1,2,3,4,5,6,7,0,0,8,9,0,0,0,0,10,11,12,0,0,
+                14,15,16,0,0,0,17,18,0,0,0,0,0,0,0};
+
+    int i=0;
+
+    create(root1,arr1,i);
+
+    fillOddNodesIntoQueueAndEvenValuesInStack(root1);
+
+    modifyTree(q1,s);
+
+    preorder(root1);
+
+    cout<<endl;
+
+    i=0;
+    q1.r=-1;
+    q1.f=-1;
+    s.top=-1;
+
+    create(root2,arr2,i);
+
+    fillOddNodesIntoQueueAndEvenValuesInStack(root2);
+
+    modifyTree(q1,s);
+
+    preorder(root2);
+
+    return 0;
+}
