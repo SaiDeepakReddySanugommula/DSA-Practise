@@ -1,0 +1,148 @@
+/*
+Problem:
+Create two Binary Search Trees T1 and T2 using given input.
+Remove all common values present in both trees so that T1 and T2
+contain disjoint sets of values, while maintaining the BST property.
+
+Constraints:
+- Do NOT use arrays.
+- After removal, print inorder traversal of both BSTs.
+
+Input Example:
+T1: 9 7 3 45 36 40 22 4 8 5 -1
+T2: 27 18 72 40 3 1 22 8 -1
+
+Output:
+T1: 4 5 7 9 36 45
+T2: 1 18 27 72
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc,*rc;
+};
+
+bstnode* T1=NULL,*T2=NULL,*temp=NULL;
+
+void create(bstnode* &root,int k){
+    if(root==NULL){
+        root=new bstnode;
+        root->data=k;
+        root->rc=root->lc=NULL;
+        return;
+    }
+
+    if(root->data>k){
+        create(root->lc,k);
+    }else{
+        create(root->rc,k);
+    }
+}
+
+bstnode*& search(bstnode* &root,int k){
+    if(root==NULL) return temp;
+
+    if(root->data==k){
+        return root;
+    }
+    else if(root->data>k){
+        return search(root->lc,k);
+    }
+    else{
+        return search(root->rc,k);
+    }
+}
+
+void deletee(bstnode* & root){
+
+    if(root->lc){
+        bstnode* temp=root->lc;
+
+        if(temp->rc==NULL){
+            temp->rc=root->rc;
+            root=root->lc;
+            return;
+        }
+
+        while(temp->rc->rc!=NULL){
+            temp=temp->rc;
+        }
+
+        root->data=temp->rc->data;
+        temp->rc=temp->rc->lc;
+        return;
+    }
+
+    else if(root->rc){
+        bstnode* temp=root->rc;
+
+        if(temp->lc==NULL){
+            root=root->rc;
+            return;
+        }
+
+        while(temp->lc->lc!=NULL){
+            temp=temp->lc;
+        }
+
+        root->data=temp->lc->data;
+        temp->lc=temp->lc->rc;
+        return;
+    }
+
+    else{
+        root=NULL;
+    }
+}
+
+void clearCommon(bstnode*& T1,bstnode* &T2,bstnode *&org1,bstnode*&org2){
+
+    if(T1==NULL) return;
+
+    clearCommon(T1->lc,T2,org1,org2);
+
+    if(search(T2,T1->data)!=NULL){
+
+        deletee(search(T2,T1->data));
+        deletee(T1);
+
+        clearCommon(org1,org2,org1,org2);
+        return;
+    }
+
+    clearCommon(T1->rc,T2,org1,org2);
+}
+
+void inorder(bstnode* root){
+
+    if(!root) return;
+
+    inorder(root->lc);
+    cout<<root->data<<" ";
+    inorder(root->rc);
+}
+
+int main(){
+
+    int t;
+
+    while(cin>>t && t!=-1){
+        create(T1,t);
+    }
+
+    while(cin>>t && t!=-1){
+        create(T2,t);
+    }
+
+    clearCommon(T1,T2,T1,T2);
+
+    inorder(T1);
+    cout<<endl;
+
+    inorder(T2);
+
+    return 0;
+}
