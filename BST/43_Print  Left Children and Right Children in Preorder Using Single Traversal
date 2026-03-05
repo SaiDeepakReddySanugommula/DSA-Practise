@@ -1,0 +1,91 @@
+/*
+Problem:
+Binary Tree - Iterative lefts , rights
+
+Create a binary tree with the given serialized preorder input (# means NULL).
+
+Iteratively print:
+1. All left children in preorder order
+2. All right children in preorder order
+
+Tree must be traversed only once.
+
+Node structure allowed only:
+lc , data , rc
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    char data;
+    bstnode* lc, *rc;   // lc = left child, rc = right child
+};
+
+bstnode* root = NULL;
+
+struct stack{
+    bstnode* arr[100];  // array to store nodes for iterative traversal
+    int top = -1;       // top pointer for stack
+};
+
+void push(stack &s, bstnode* root){
+    if(s.top >= 49){    // simple overflow check
+        return;
+    }
+    s.arr[++s.top] = root;   // push node to stack
+}
+
+bstnode* pop(stack &s){
+    if(s.top == -1) return NULL;   // if stack empty
+    return s.arr[s.top--];         // return top element and decrease top
+}
+
+void create(bstnode* &root, char c){
+    cin >> c;          // read next character from serialized preorder
+    if(c == '#') return;   // '#' means no node here (NULL)
+
+    root = new bstnode;   // create new node
+    root->data = c;       // assign data
+    root->lc = root->rc = NULL;   // initialize children
+
+    create(root->lc, c);  // recursively create left subtree
+    create(root->rc, c);  // recursively create right subtree
+}
+
+void preorderIteratively(bstnode* root, string &left, string &right){
+    stack s;
+    push(s, root);   // start traversal by pushing root
+
+    while(s.top != -1){   // while stack not empty
+
+        bstnode* temp = s.arr[s.top];   // get current node (top)
+        pop(s);                         // remove it from stack
+
+        // if right child exists
+        if(temp->rc){
+            push(s, temp->rc);          // push right child to stack
+            right += temp->rc->data;    // record right child in preorder order
+        }
+
+        // if left child exists
+        if(temp->lc){
+            push(s, temp->lc);          // push left child
+            left += temp->lc->data;     // record left child in preorder order
+        }
+    }
+}
+
+int main(){
+    char c;
+
+    create(root, c);   // build tree from serialized preorder input
+
+    string left = "", right = "";
+
+    preorderIteratively(root, left, right);   // single traversal
+
+    cout << left << endl << right;   // print results
+
+    return 0;
+}
