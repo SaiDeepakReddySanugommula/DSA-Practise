@@ -1,0 +1,91 @@
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc,*rc;
+};
+
+bstnode* root=NULL;
+
+struct queue{
+    int arr[50];
+    int r=-1,f=-1;
+}q;
+
+void enque(queue& q,int k){
+    if(q.r==-1){
+        q.r=0;
+        q.f=0;
+    }
+    else{
+        q.r++;
+    }
+    q.arr[q.r]=k;
+}
+
+int deque(queue& q){
+    int k=q.arr[q.f];
+    if(q.f==q.r){
+        q.f=-1;
+        q.r=-1;
+    }
+    else{
+        q.f++;
+    }
+    return k;
+}
+
+void create(bstnode* &root,int k){
+    if(root==NULL){
+        root=new bstnode;
+        root->data=k;
+        root->lc=NULL;
+        root->rc=NULL;
+        return;
+    }
+
+    if(k>root->data)
+        create(root->rc,k);
+    else
+        create(root->lc,k);
+}
+
+void print(queue q){
+    while(q.f!=-1){
+        cout<<deque(q)<<" ";
+    }
+}
+
+void paths(bstnode* root,queue q){
+    if(root==NULL) return;
+
+    enque(q,root->data);
+
+    if(root->lc || root->rc){
+
+        if(root->lc)
+            paths(root->lc,q);
+
+        if(root->rc)
+            paths(root->rc,q);
+
+    }
+    else{
+        print(q);
+        cout<<endl;
+    }
+}
+
+int main(){
+    int t;
+
+    while(cin>>t && t!=-1){
+        create(root,t);
+    }
+
+    if(root)
+        paths(root,q);
+
+    return 0;
+}
