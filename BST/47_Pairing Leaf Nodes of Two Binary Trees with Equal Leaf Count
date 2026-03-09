@@ -1,0 +1,92 @@
+/*
+ - BT - Pair Leaves
+
+Create two structurally different binary trees T1 and T2 with different
+total number of nodes but equal number of leaf nodes.
+
+Pair the leaf nodes of both trees and print them.
+
+Input:
+5 7 9 5 0 0 6 0 0 4 0 0 3 0 0
+9 4 2 0 3 0 0 8 0 6 0 0 1 5 0 0 7 18 0 0 0
+
+Expected Output:
+5 3
+6 6
+4 5
+3 18
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc;
+    bstnode* rc;
+    bool visited;
+};
+
+bstnode* T1=NULL;
+bstnode* T2=NULL;
+
+void create(bstnode*& root){
+    int k;
+    cin>>k;
+
+    if(k==0) return;
+
+    root=new bstnode;
+    root->data=k;
+    root->lc=NULL;
+    root->rc=NULL;
+    root->visited=false;
+
+    create(root->lc);
+    create(root->rc);
+}
+
+bool found=false;
+
+void inorderLeafNodes(bstnode* root,int &res){
+    if(found || root==NULL) return;
+
+    inorderLeafNodes(root->lc,res);
+
+    if(!root->lc && !root->rc && !root->visited){
+        root->visited=true;
+        res=root->data;
+        found=true;
+        return;
+    }
+
+    inorderLeafNodes(root->rc,res);
+}
+
+int main(){
+    create(T1);
+    create(T2);
+
+    int x=1,y=1;
+
+    while(x!=-1 && y!=-1){
+
+        x=-1;
+        y=-1;
+
+        found=false;
+        inorderLeafNodes(T1,x);
+
+        found=false;
+        inorderLeafNodes(T2,y);
+
+        if(x!=-1 && y!=-1){
+            cout<<x<<" "<<y<<endl;
+        }
+        else{
+            break;
+        }
+    }
+
+    return 0;
+}
