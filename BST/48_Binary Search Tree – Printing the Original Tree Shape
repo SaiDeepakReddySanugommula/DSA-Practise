@@ -1,0 +1,149 @@
+/*
+Binary Search Tree – As it is - Shape
+
+Create a Binary Search Tree using the given input sequence.
+Print the BST in its exact shape using '*' for empty positions.
+
+Input:
+5 8 3 4 1 9 6 7 2 -1
+
+Output:
+****5****
+**3****8*
+1**4*6**9
+*2****7**
+*/
+
+#include <iostream>
+using namespace std;
+
+struct bstnode{
+    int data;
+    bstnode* lc;
+    bstnode* rc;
+    int pos=-1;
+};
+
+bstnode* root=NULL;
+
+void insertNode(bstnode* &root,int key){
+    if(root==NULL){
+        root=new bstnode;
+        root->data=key;
+        root->lc=NULL;
+        root->rc=NULL;
+        return;
+    }
+
+    if(key < root->data)
+        insertNode(root->lc,key);
+    else
+        insertNode(root->rc,key);
+}
+
+struct queue{
+    bstnode* arr[100];
+    int f=-1,r=-1;
+};
+
+void enqueue(queue &q, bstnode* node){
+    if(q.f==-1){
+        q.f=q.r=0;
+    }
+    else{
+        q.r++;
+    }
+    q.arr[q.r]=node;
+}
+
+bstnode* dequeue(queue &q){
+    if(q.r==-1) return NULL;
+
+    bstnode* temp=q.arr[q.f];
+
+    if(q.f==q.r){
+        q.f=q.r=-1;
+    }
+    else{
+        q.f++;
+    }
+
+    return temp;
+}
+
+void assignInorderPosition(bstnode* root,int &index){
+    if(root==NULL) return;
+
+    assignInorderPosition(root->lc,index);
+
+    index++;
+    root->pos=index;
+
+    assignInorderPosition(root->rc,index);
+}
+
+void printTreeShape(queue q,int n){
+    int printed=0;
+
+    while(q.r!=-1){
+
+        bstnode* temp=dequeue(q);
+
+        if(temp!=NULL){
+
+            while(printed < temp->pos){
+                cout<<"*";
+                printed++;
+            }
+
+            cout<<temp->data;
+            printed++;
+
+            if(temp->lc) enqueue(q,temp->lc);
+            if(temp->rc) enqueue(q,temp->rc);
+        }
+        else{
+
+            if(q.r==-1){
+                while(printed<n){
+                    cout<<"*";
+                    printed++;
+                }
+                cout<<endl;
+                return;
+            }
+
+            while(printed<n){
+                cout<<"*";
+                printed++;
+            }
+
+            cout<<endl;
+            printed=0;
+            enqueue(q,NULL);
+        }
+    }
+}
+
+int main(){
+
+    int x;
+    int nodeCount=0;
+
+    while(cin>>x && x!=-1){
+        insertNode(root,x);
+        nodeCount++;
+    }
+
+    queue q;
+
+    enqueue(q,root);
+    enqueue(q,NULL);
+
+    int index=-1;
+    assignInorderPosition(root,index);
+
+    printTreeShape(q,nodeCount);
+
+    return 0;
+}
